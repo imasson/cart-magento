@@ -294,8 +294,4 @@ class MercadoPago_Core_Model_Standard_Payment extends Mage_Payment_Model_Method_
         return $arr;
     }
 
-    public function getSuccessBlockType()
-    {
-        return $this->_successBlockType;
-    }
 }

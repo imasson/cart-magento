@@ -445,8 +445,4 @@ class MercadoPago_Core_Model_Custom_Payment
         return $arr;
     }
 
-    public function getSuccessBlockType()
-    {
-        return $this->_successBlockType;
-    }
 }

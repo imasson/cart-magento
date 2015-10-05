@@ -82,8 +82,4 @@ class MercadoPago_Core_Model_CustomTicket_Payment
         return Mage::getUrl('mercadopago/success', array('_secure' => true));
     }
 
-    public function getSuccessBlockType()
-    {
-        return $this->_successBlockType;
-    }
 }
