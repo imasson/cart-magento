@@ -24,18 +24,13 @@ class MercadoPago_Core_Model_Standard_Payment extends Mage_Payment_Model_Method_
     
     protected $_isGateway                   = true;
     protected $_canOrder                    = true;
-    protected $_canAuthorize                = true;
-    protected $_canCapture                  = true;
     protected $_canCapturePartial           = true;
-    protected $_canRefund                   = true;
     protected $_canRefundInvoicePartial     = true;
-    protected $_canVoid                     = true;
     protected $_canUseInternal              = true;
     protected $_canUseCheckout              = true;
     protected $_canUseForMultishipping      = true;
     protected $_canFetchTransactionInfo     = true;
     protected $_canCreateBillingAgreement   = true;
-    protected $_canReviewPayment            = true;
 
     public function postPago()
     {

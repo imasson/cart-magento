@@ -26,14 +26,10 @@ class MercadoPago_Core_Model_CustomTicket_Payment
 
     protected $_canSaveCc = false;
     protected $_isGateway = true;
-    protected $_canAuthorize = true;
-    protected $_canCapture = true;
-    protected $_canVoid = true;
     protected $_canCancelInvoice = true;
     protected $_isInitializeNeeded = true;
     protected $_canFetchTransactionInfo = true;
     protected $_canCreateBillingAgreement = true;
-    protected $_canReviewPayment = true;
 
     public function initialize($paymentAction, $stateObject)
     {
