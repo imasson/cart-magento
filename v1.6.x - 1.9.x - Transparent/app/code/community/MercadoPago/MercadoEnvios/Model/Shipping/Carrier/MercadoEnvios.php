@@ -168,4 +168,27 @@ class MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios
         return in_array($rateId, $this->_available);
     }
 
+    public function isTrackingAvailable()
+    {
+        return true;
+    }
+
+    /**
+     *
+     * @param $tracking
+     *
+     * @return null
+     */
+    public function getTrackingInfo($tracking)
+    {
+        $track =
+            ['url'  => 'http://www.example.com/' . $tracking,
+             'code' => self::CODE
+
+            ];
+
+        //->setTracking($tracking)
+        //  ->setCarrierTitle($this->getConfigData('name'));
+        return $track;
+    }
 }

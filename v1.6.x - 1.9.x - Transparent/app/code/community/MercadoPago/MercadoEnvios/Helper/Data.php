@@ -7,6 +7,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
     const XML_PATH_ATTRIBUTES_MAPPING = 'carriers/mercadoenvios/attributesmapping';
     const ME_LENGTH_UNIT = 'cm';
     const ME_WEIGHT_UNIT = 'gr';
+    const XML_PATH_TRACKING_URL = 'carriers/mercadoenvios/attributesmapping';
 
     protected $_mapping;
     protected $_products = [];
@@ -122,20 +123,50 @@ class MercadoPago_MercadoEnvios_Helper_Data
         if ($attributeType == 'weight') {
             //check if needs conversion
             if ($this->_mapping[$attributeType]['unit'] != self::ME_WEIGHT_UNIT) {
-                $unit = new Zend_Measure_Weight($value);
+                $unit = new Zend_Measure_Weight((float)$value);
                 $unit->convertTo(Zend_Measure_Weight::GRAM);
 
                 return $unit->getValue();
             }
 
         } elseif ($this->_mapping[$attributeType]['unit'] != self::ME_LENGTH_UNIT) {
-            $unit = new Zend_Measure_Length($value);
+            $unit = new Zend_Measure_Length((float)$value);
             $unit->convertTo(Zend_Measure_Length::CENTIMETER);
 
             return $unit->getValue();
         }
 
         return $value;
+    }
+
+    public function getTrackingUrlByOrder($_order)
+    {
+        if ($_order->getTracksCollection()->count()) {
+            foreach ($_order->getTracksCollection() as $_track) {
+                if ($_track->getCarrierCode() == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
+                    return $this->_getFullTrackingUrl($_track->getTrackNumber());
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function getTrackingUrlByShippingInfo($_shippingInfo)
+    {
+        foreach ($_shippingInfo->getTrackingInfo() as $track) {
+            $firstElement = $track[0];
+            if (isset($firstElement['code']) && $firstElement['code'] == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
+                return $firstElement['url'];
+            }
+        }
+
+        return false;
+    }
+
+    protected function _getFullTrackingUrl($number = 0)
+    {
+        return 'www.pepe.com/' . $number;
     }
 
 }
