@@ -53,6 +53,7 @@
                     </paymentfilter_payment_method_is_active>
                 </observers>
             </payment_method_is_active>
+
         </events>
     </global>
     <default>
@@ -68,4 +69,17 @@
             </mercadoenvios>
         </carriers>
     </default>
+    <adminhtml>
+        <events>
+            <adminhtml_widget_container_html_before>
+                <observers>
+                    <mercadopago_mercadoenvios>
+                        <type>singleton</type>
+                        <class>MercadoPago_MercadoEnvios_Model_Observer</class>
+                        <method>addPrintButton</method>
+                    </mercadopago_mercadoenvios>
+                </observers>
+            </adminhtml_widget_container_html_before>
+        </events>
+    </adminhtml>
 </config>

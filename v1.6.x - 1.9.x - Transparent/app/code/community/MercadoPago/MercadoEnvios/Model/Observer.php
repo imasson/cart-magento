@@ -37,4 +37,19 @@ class MercadoPago_MercadoEnvios_Model_Observer
             $popupBlock->setTrackingUrl($url);
         }
     }
+
+    public function addPrintButton($observer)
+    {
+        $block = $observer->getBlock();
+
+        if ($block instanceof Mage_Adminhtml_Block_Sales_Order_Shipment_View) {
+            $shipmentId = Mage::app()->getRequest()->getParam('shipment_id');
+            $block->addButton('do_something_crazy', array(
+                'label'   => 'Export Order',
+                'onclick' => 'setLocation(\' ' . Mage::helper('mercadopago_mercadoenvios')->getTrackingPrintUrl($shipmentId) . '\')',
+                'class'   => 'go'
+            ));
+        }
+    }
+
 }

@@ -88,14 +88,17 @@ class MercadoPago_Core_NotificationsController
                 }
 
                 if (count($merchant_order['shipments']) > 0) {
-
-                    if($merchant_order['response']['shipments'][0]['status'] == 'ready_to_ship'){
-                        $order = Mage::getModel('sales/order')->loadByIncrementId($data["external_reference"]);
-                        $shipment = Mage::getModel('sales/service_order', $order)->prepareShipment();
-
-                        $tracking['number'] = $merchant_order['response']['shipments'][0]['service_id'];
-                        $track = Mage::getModel('sales/order_shipment_track')->addData($tracking);
-                        $shipment->addTrack($track);
+                    $order = Mage::getModel('sales/order')->loadByIncrementId($data["external_reference"]);
+                    if (!$order->hasShipments()) {
+                        if ($merchant_order['response']['shipments'][0]['status'] == 'ready_to_ship') {
+                            $shipment = Mage::getModel('sales/service_order', $order)->prepareShipment();
+                            $tracking['number'] = $merchant_order['response']['shipments'][0]['service_id'];
+                            $track = Mage::getModel('sales/order_shipment_track')->addData($tracking);
+                            $shipment->addTrack($track);
+                        }
+                    } else {
+                        $shipment = $order->getShipmentsCollection()->getFirstItem();
+                        $shipment->setShipmentStatus($merchant_order['response']['shipments'][0]['status']);
                         $shipment->save();
                     }
                 }
@@ -132,6 +135,7 @@ class MercadoPago_Core_NotificationsController
 
                 $this->updateOrder($payment);
                 $this->setStatusOrder($payment);
+
                 return;
             }
         }
@@ -236,7 +240,7 @@ class MercadoPago_Core_NotificationsController
 
     protected function getMessage($status, $payment)
     {
-        $rawMessage =  Mage::helper('mercadopago')->__(Mage::helper('mercadopago/statusOrderMessage')->getMessage($status));
+        $rawMessage = Mage::helper('mercadopago')->__(Mage::helper('mercadopago/statusOrderMessage')->getMessage($status));
         $rawMessage .= Mage::helper('mercadopago')->__('<br/> Payment id: %s', $payment['id']);
         $rawMessage .= Mage::helper('mercadopago')->__('<br/> Status: %s', $payment['status']);
         $rawMessage .= Mage::helper('mercadopago')->__('<br/> Status Detail: %s', $payment['status_detail']);

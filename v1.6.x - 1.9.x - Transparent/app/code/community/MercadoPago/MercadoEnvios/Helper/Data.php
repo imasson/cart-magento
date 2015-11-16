@@ -169,4 +169,16 @@ class MercadoPago_MercadoEnvios_Helper_Data
         return 'www.example.com/' . $number;
     }
 
+    public function getTrackingPrintUrl($shipmentId)
+    {
+        if ($shipmentId = Mage::app()->getRequest()->getParam('shipment_id')) {
+            if ($shipment = Mage::getModel('sales/order_shipment')->load($shipmentId)) {
+
+            }
+        }
+        else {
+            $this->_forward('noRoute');
+        }
+    }
+
 }
