@@ -166,7 +166,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
 
     protected function _getFullTrackingUrl($number = 0)
     {
-        return 'www.pepe.com/' . $number;
+        return 'www.example.com/' . $number;
     }
 
 }
