@@ -7,7 +7,7 @@
     </modules>
     <frontend>
         <events>
-            <controller_action_layout_render_before_shipping_tracking_popup>
+            <controller_action_predispatch_shipping_tracking_popup>
                 <observers>
                     <mercadopago_mercadoenvios>
                         <type>model</type>
@@ -15,7 +15,7 @@
                         <method>trackingPopup</method>
                     </mercadopago_mercadoenvios>
                 </observers>
-            </controller_action_layout_render_before_shipping_tracking_popup>
+            </controller_action_predispatch_shipping_tracking_popup>
         </events>
     </frontend>
     <global>

@@ -30,11 +30,11 @@ class MercadoPago_MercadoEnvios_Model_Observer
 
     public function trackingPopup($observer)
     {
-        $shippingInfoModel = Mage::registry('current_shipping_info');
+        $shippingInfoModel = Mage::getModel('shipping/info')->loadByHash(Mage::app()->getRequest()->getParam('hash'));
+
         if ($url = Mage::helper('mercadopago_mercadoenvios')->getTrackingUrlByShippingInfo($shippingInfoModel)) {
-            $popupBlock = Mage::app()->getLayout()->getBlock('shipping.tracking.popup');
-            $popupBlock->setTemplate('mercadopago/mercadoenvios/shipping/tracking/redirect.phtml');
-            $popupBlock->setTrackingUrl($url);
+            Mage::app()->getRequest()->setDispatched(true);
+            Mage::app()->getResponse()->setRedirect($url);
         }
     }
 
