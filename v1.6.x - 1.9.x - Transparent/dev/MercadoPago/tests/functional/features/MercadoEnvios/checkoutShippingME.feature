@@ -72,7 +72,7 @@ Feature: As a customer I want to choose shipping method MercadoEnvios
     And I wait for "20" seconds with "(0 === Ajax.activeRequestCount)"
     And I press "#payment-buttons-container .button" element
     And I wait for "20" seconds with "(0 === Ajax.activeRequestCount)"
-    Then I should see "(MercadoEnvíos - OCA Estándar"
+    Then I should see "(MercadoEnvíos - Normal"
     And I should see element "#checkout-review-table .a-right .price" with text "$77.99"
 
   @MercadoEnvios @CheckoutShippingMethods @addShipmentToRequest
