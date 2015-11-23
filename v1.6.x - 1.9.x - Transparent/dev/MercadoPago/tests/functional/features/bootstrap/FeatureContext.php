@@ -848,6 +848,8 @@ class FeatureContext
             $this->settingConfig('payment/mercadopago_custom_checkout/public_key', $publicKey);
             $this->settingConfig('payment/mercadopago_custom_checkout/access_token', $accessToken);
         }
+
+        Mage::dispatchEvent('admin_system_config_changed_section_payment');
     }
 
     /**

@@ -5,6 +5,8 @@ class MercadoPago_MercadoEnvios_Helper_Data
 {
 
     const XML_PATH_ATTRIBUTES_MAPPING = 'carriers/mercadoenvios/attributesmapping';
+    const XML_PATH_SPECIFICCOUNTRY = 'carriers/mercadoenvios/specificcountry';
+
     const ME_LENGTH_UNIT = 'cm';
     const ME_WEIGHT_UNIT = 'gr';
 

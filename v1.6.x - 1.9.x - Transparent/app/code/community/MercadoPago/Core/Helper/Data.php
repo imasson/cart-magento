@@ -22,6 +22,7 @@ class MercadoPago_Core_Helper_Data
     const XML_PATH_PUBLIC_KEY = 'payment/mercadopago_custom_checkout/public_key';
     const XML_PATH_CLIENT_ID = 'payment/mercadopago_standard/client_id';
     const XML_PATH_CLIENT_SECRET = 'payment/mercadopago_standard/client_secret';
+    const XML_PATH_COUNTRY = 'payment/mercadopago/country';
 
     public function log($message, $file = "mercadopago.log", $array = null)
     {

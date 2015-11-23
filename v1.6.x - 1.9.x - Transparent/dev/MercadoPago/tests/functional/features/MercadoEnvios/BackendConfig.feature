@@ -24,6 +24,11 @@ Feature: MercadoEnvios configuration
 
     Then I should not see "Checkout Classic Method must be enabled"
 
+  @ADMIN
+  Scenario: Check allowed country
+    Given Setting config "payment/mercadopago/country" is "mla"
+
+
   @ATTRIBUTES
   Scenario: See Magento product attributes repeat error
     Given Setting config "payment/mercadopago_standard/active" is "1"
@@ -67,9 +72,7 @@ Feature: MercadoEnvios configuration
     And  I should see html "Title"
     And I should see html "Product attributes mapping"
     And I should see html "Available shipping methods"
-    And I should see html "Allow Specific Country"
     And I should see html "Show method if not applicable"
-    And I should see html "Specific Country"
     And I should see html "Displayed Error Message"
     And I should see html "Debug Mode"
     And I should see html "Sort order"
