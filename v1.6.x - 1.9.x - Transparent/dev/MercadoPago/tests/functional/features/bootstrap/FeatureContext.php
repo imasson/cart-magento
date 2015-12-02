@@ -809,7 +809,10 @@ class FeatureContext
         $this->getSession()->wait(20000, '(0 === Ajax.activeRequestCount)');
         $element = $this->findElement('#checkout-review-table');
 
-        $this->_stringMatch($element->getText(), 'Financing Cost');
+        if (!$this->_stringMatch($element->getText(), 'Financing Cost')){
+            throw new ExpectationException('Text not found: Financing Cost ', $this->getSession()->getDriver());
+        }
+
     }
 
     /**

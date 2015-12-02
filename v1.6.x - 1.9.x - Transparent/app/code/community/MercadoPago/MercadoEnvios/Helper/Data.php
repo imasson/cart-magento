@@ -7,6 +7,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
     const XML_PATH_ATTRIBUTES_MAPPING = 'carriers/mercadoenvios/attributesmapping';
     const ME_LENGTH_UNIT = 'cm';
     const ME_WEIGHT_UNIT = 'gr';
+    const XML_PATH_TRACKING_URL = 'carriers/mercadoenvios/attributesmapping';
 
     protected $_mapping;
     protected $_products = [];
@@ -140,7 +141,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
         return $value;
     }
 
-    public function getFreeMethod($request)
+public function getFreeMethod($request)
     {
         $freeMethod = Mage::getStoreConfig('carriers/mercadoenvios/free_method');
         if (!empty($freeMethod)) {
@@ -159,6 +160,48 @@ class MercadoPago_MercadoEnvios_Helper_Data
     public function isCountryEnabled()
     {
         return (in_array(Mage::getStoreConfig('payment/mercadopago/country'), self::$enabled_methods));
+    }
+
+    public function getTrackingUrlByOrder($_order)
+    {
+        if ($_order->getTracksCollection()->count()) {
+            foreach ($_order->getTracksCollection() as $_track) {
+                if ($_track->getCarrierCode() == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
+                    return $this->_getFullTrackingUrl($_track->getTrackNumber());
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function getTrackingUrlByShippingInfo($_shippingInfo)
+    {
+        foreach ($_shippingInfo->getTrackingInfo() as $track) {
+            $firstElement = $track[0];
+            if (isset($firstElement['code']) && $firstElement['code'] == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
+                return $firstElement['url'];
+            }
+        }
+
+        return false;
+    }
+
+    protected function _getFullTrackingUrl($number = 0)
+    {
+        return 'www.example.com/' . $number;
+    }
+
+    public function getTrackingPrintUrl($shipmentId)
+    {
+        if ($shipmentId = Mage::app()->getRequest()->getParam('shipment_id')) {
+            if ($shipment = Mage::getModel('sales/order_shipment')->load($shipmentId)) {
+
+            }
+        }
+        else {
+            $this->_forward('noRoute');
+        }
     }
 
 }
