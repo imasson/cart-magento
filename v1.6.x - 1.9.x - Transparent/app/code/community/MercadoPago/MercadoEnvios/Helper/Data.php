@@ -141,7 +141,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
         return $value;
     }
 
-public function getFreeMethod($request)
+    public function getFreeMethod($request)
     {
         $freeMethod = Mage::getStoreConfig('carriers/mercadoenvios/free_method');
         if (!empty($freeMethod)) {
@@ -179,8 +179,8 @@ public function getFreeMethod($request)
     {
         foreach ($_shippingInfo->getTrackingInfo() as $track) {
             $firstElement = $track[0];
-            if (isset($firstElement['code']) && $firstElement['code'] == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
-                return $firstElement['url'];
+            if (isset($firstElement['title']) && $firstElement['title'] == MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE) {
+                return $this->_getFullTrackingUrl($firstElement['number']);
             }
         }
 
@@ -189,7 +189,7 @@ public function getFreeMethod($request)
 
     protected function _getFullTrackingUrl($number = 0)
     {
-        return 'www.example.com/' . $number;
+        return 'http://www.example.com/' . $number;
     }
 
     public function getTrackingPrintUrl($shipmentId)
@@ -198,8 +198,7 @@ public function getFreeMethod($request)
             if ($shipment = Mage::getModel('sales/order_shipment')->load($shipmentId)) {
 
             }
-        }
-        else {
+        } else {
             $this->_forward('noRoute');
         }
     }
