@@ -41,8 +41,8 @@ class MercadoPago_MercadoEnvios_Model_Observer
 
         if ($block instanceof Mage_Adminhtml_Block_Sales_Order_Shipment_View) {
             $shipmentId = Mage::app()->getRequest()->getParam('shipment_id');
-            $block->addButton('print_shipment', array(
-                'label'   => 'Export Order',
+            $block->addButton('print_shipment_label', array(
+                'label'   => 'Print shipping label',
                 'onclick' => 'setLocation(\' ' . Mage::helper('mercadopago_mercadoenvios')->getTrackingPrintUrl($shipmentId) . '\')',
                 'class'   => 'go'
             ));

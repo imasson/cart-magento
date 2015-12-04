@@ -87,21 +87,18 @@ class MercadoPago_Core_NotificationsController
                     if (count($merchant_order['shipments']) > 0) {
                         //if order has shipments, status is updated. If it doesn't the shipment is created.
                         $order = Mage::getModel('sales/order')->loadByIncrementId($data["external_reference"]);
-                        if ($order->hasShipments()) {
-                            $shipment = $order->getShipmentsCollection()->getFirstItem();
-                            $shipment->setShipmentStatus($merchant_order['shipments'][0]['status']);
-                            $shipment->save();
-
-                            return;
-                        } else {
-                            if ($merchant_order['shipments'][0]['status'] == 'ready_to_ship') {
-                                $shipment = Mage::getModel('sales/service_order', $order)->prepareShipment();
-                                $tracking['number'] = $merchant_order['shipments'][0]['service_id'];
-                                $tracking['title'] = MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE;
-                                $track = Mage::getModel('sales/order_shipment_track')->addData($tracking);
-                                $shipment->addTrack($track);
-                                $shipment->save();
-                            }
+                        if ($merchant_order['shipments'][0]['status'] == 'ready_to_ship') {
+                            $shipment = Mage::getModel('sales/service_order', $order)->prepareShipment();
+                            $shipment->register();
+                            $order->setIsInProcess(true);
+                            $tracking['number'] = $merchant_order['shipments'][0]['service_id'];
+                            $tracking['title'] = MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE;
+                            $track = Mage::getModel('sales/order_shipment_track')->addData($tracking);
+                            $shipment->addTrack($track);
+                            Mage::getModel('core/resource_transaction')
+                                ->addObject($shipment)
+                                ->addObject($order)
+                                ->save();
                         }
                     }
 
