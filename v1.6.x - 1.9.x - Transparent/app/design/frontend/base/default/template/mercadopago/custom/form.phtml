@@ -10,7 +10,7 @@ $customer = $this->getCustomerAndCards();
 
 <script>
     document.observe("dom:loaded", function() {
-        initMercadoPagoJs();
+        MercadoPagoCustom.getInstance().init();
     });
 </script>
 
@@ -27,7 +27,7 @@ $customer = $this->getCustomerAndCards();
                 echo $block->toHtml();
                 ?>
                 <script type="text/javascript">
-                    initDiscountMercadoPagoCustom();
+                    MercadoPagoCustom.getInstance().initDiscount();
                 </script>
                 <?php
             endif;
@@ -65,7 +65,7 @@ $customer = $this->getCustomerAndCards();
 
                 <script>
                     document.observe("dom:loaded", function() {
-                        initMercadoPagoOCP();
+                        MercadoPagoCustom.getInstance().initOCP();
                     });
                 </script>
             <?php endif; ?>
