@@ -59,7 +59,7 @@ var MercadoPagoCustom = (function () {
             option: 'option',
             undefined: 'undefined',
             default: 'default',
-            checkout: 'onestepcheckout',
+            checkout: 'idecheckoutvm',
             mexico: 'MLM',
             brazil: 'MLB',
             mercadopagoCustom: 'mercadopago_custom',
@@ -307,13 +307,23 @@ var MercadoPagoCustom = (function () {
             var _installments = TinyJ(self.selectors.installments);
             var _cost = '';
             try {
-                _cost = _installments.getSelectedOption().attribute(self.constants.cost)
+                _cost = _installments.getSelectedOption().attribute(self.constants.cost);
+                if (installmentOption == _installments.getSelectedOption().val()) {
+                    return;
+                }
                 installmentOption = _installments.getSelectedOption().val();
             } catch (Exception) {
                 _cost = '';
             }
             TinyJ(self.selectors.totalAmount).val(_cost);
-            OSCPayment.savePayment();
+
+            try {
+                //inovarti onestepcheckout
+                OSCPayment.savePayment();
+            } catch (Exception) {
+                //ideasa onestepcheckout
+                payment.update();
+            }
 
             //OnestepcheckoutCoreUpdater.runRequest("http://mercadopago.local/onestepcheckout/ajax/savePaymentMethod/", {method:'post',parameters:Form.serialize("onestepcheckout-payment-method",true)});
 
@@ -322,10 +332,20 @@ var MercadoPagoCustom = (function () {
         function registerAjaxObervers() {
             Ajax.Responders.register({
                 onCreate: function() {
-                    TinyJ(self.selectors.installments).disable();
+                    try {
+                        TinyJ(self.selectors.installments).disable();
+                    } catch (Exception) {
+                        showLogMercadoPago(Exception);
+                    }
+
                 },
                 onComplete: function() {
-                    TinyJ(self.selectors.installments).enable();
+                    try {
+                        TinyJ(self.selectors.installments).enable();
+                    } catch (Exception) {
+                        showLogMercadoPago(Exception);
+                    }
+
                 }
             });
         }
