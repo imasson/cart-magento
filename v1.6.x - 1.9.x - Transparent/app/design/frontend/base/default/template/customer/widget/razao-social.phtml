@@ -1,0 +1,4 @@
+<label for="<?php echo $this->getFieldId('razao_social')?>"<?php if ($this->isRequired()) echo ' class="required"' ?>><?php if ($this->isRequired()) echo '<em>*</em>' ?><?php echo $this->__('Razao Social') ?></label>
+<div class="input-box">
+    <input type="text" id="<?php echo $this->getFieldId('razao_social')?>" name="<?php echo $this->getFieldName('razao_social')?>" value="<?php echo $this->escapeHtml($this->getRazaoSocial()) ?>" title="<?php echo $this->__('Razao Social') ?>" class="input-text" <?php echo $this->getFieldParams() ?> />
+</div>

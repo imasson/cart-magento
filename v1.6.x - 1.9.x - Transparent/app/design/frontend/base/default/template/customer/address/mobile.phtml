@@ -1,0 +1,6 @@
+<div class="field">
+    <label for="mobile" <?php echo ($this->isRequired() ? 'class="required"' : '') ?>><?php echo ($this->isRequired() ? '<em>*</em>' : '') ?><?php echo $this->helper('idecheckoutvm')->__('Mobile') ?></label>
+    <div class="input-box">
+        <input type="text" name="mobile" value="<?php echo $this->htmlEscape($this->getAddress()->getMobile()) ?>" title="<?php echo $this->helper('idecheckoutvm')->__('Mobile') ?>" class="input-text <?php echo ($this->isRequired() ? 'required-entry' : '') ?>" id="mobile" />
+    </div>
+</div>
