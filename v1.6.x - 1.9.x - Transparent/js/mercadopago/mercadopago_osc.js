@@ -215,6 +215,7 @@ var MercadoPagoCustom = (function () {
             } else if (isIdeasa()) {
                 //ideasa onestepcheckout
                 self.constants.checkout = 'idecheckoutvm';
+                payment.changeVisible('mercadopago_customticket', true);
             }
 
             //Show public key
@@ -305,6 +306,7 @@ var MercadoPagoCustom = (function () {
                 var _event = new Event('change');
                 _cardNumber.getElem().dispatchEvent(_event);
             }
+
             registerAjaxObervers();
 
             //show botão de retornar para lista de cartões
@@ -980,7 +982,6 @@ var MercadoPagoCustom = (function () {
             //inicia o objeto
             TinyJ(self.selectors.ticketActionApply).click(applyDiscountCustomTicket);
             TinyJ(self.selectors.ticketActionRemove).click(removeDiscountCustomTicket);
-
         }
 
         function applyDiscountCustom() {
