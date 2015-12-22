@@ -59,7 +59,7 @@ var MercadoPagoCustom = (function () {
             option: 'option',
             undefined: 'undefined',
             default: 'default',
-            checkout: 'idecheckoutvm',
+            checkout: 'onestepcheckout',
             mexico: 'MLM',
             brazil: 'MLB',
             mercadopagoCustom: 'mercadopago_custom',
@@ -209,6 +209,14 @@ var MercadoPagoCustom = (function () {
                 alert(self.messages.mpIncorrectlyConfigured);
             }
 
+            if (isOsc()) {
+                //inovarti onestepcheckout
+                self.constants.checkout = 'onestepcheckout';
+            } else if (isIdeasa()) {
+                //ideasa onestepcheckout
+                self.constants.checkout = 'idecheckoutvm';
+            }
+
             //Show public key
             showLogMercadoPago(String.format(self.messages.publicKey, PublicKeyMercadoPagoCustom));
             //Show site
@@ -308,25 +316,32 @@ var MercadoPagoCustom = (function () {
             var _cost = '';
             try {
                 _cost = _installments.getSelectedOption().attribute(self.constants.cost);
-                if (installmentOption == _installments.getSelectedOption().val()) {
-                    return;
+                if (installmentOption != _installments.getSelectedOption().val()) {
+                    installmentOption = _installments.getSelectedOption().val();
                 }
-                installmentOption = _installments.getSelectedOption().val();
             } catch (Exception) {
                 _cost = '';
             }
             TinyJ(self.selectors.totalAmount).val(_cost);
 
-            try {
+            if (isOsc()) {
                 //inovarti onestepcheckout
                 OSCPayment.savePayment();
-            } catch (Exception) {
+            } else if (isIdeasa()) {
                 //ideasa onestepcheckout
                 payment.update();
             }
 
-            //OnestepcheckoutCoreUpdater.runRequest("http://mercadopago.local/onestepcheckout/ajax/savePaymentMethod/", {method:'post',parameters:Form.serialize("onestepcheckout-payment-method",true)});
+        }
 
+        function isOsc()
+        {
+            return (typeof OSCPayment !== self.constants.undefined);
+        }
+
+        function isIdeasa()
+        {
+            return (typeof payment !== self.constants.undefined);
         }
 
         function registerAjaxObervers() {
@@ -780,6 +795,11 @@ var MercadoPagoCustom = (function () {
                 selectorInstallments.enable();
 
                 selectorInstallments.val(installmentOption);
+
+                if (installmentOption){
+                    setTotalAmount();
+                }
+
                 checkCreateCardToken();
 
                 //função para tarjeta mercadopago
