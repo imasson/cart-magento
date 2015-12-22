@@ -209,6 +209,14 @@ var MercadoPagoCustom = (function () {
                 alert(self.messages.mpIncorrectlyConfigured);
             }
 
+            if (isOsc()) {
+                //inovarti onestepcheckout
+                self.constants.checkout = 'onestepcheckout';
+            } else if (isIdeasa()) {
+                //ideasa onestepcheckout
+                self.constants.checkout = 'idecheckoutvm';
+            }
+
             //Show public key
             showLogMercadoPago(String.format(self.messages.publicKey, PublicKeyMercadoPagoCustom));
             //Show site
@@ -307,25 +315,52 @@ var MercadoPagoCustom = (function () {
             var _installments = TinyJ(self.selectors.installments);
             var _cost = '';
             try {
-                _cost = _installments.getSelectedOption().attribute(self.constants.cost)
-                installmentOption = _installments.getSelectedOption().val();
+                _cost = _installments.getSelectedOption().attribute(self.constants.cost);
+                if (installmentOption != _installments.getSelectedOption().val()) {
+                    installmentOption = _installments.getSelectedOption().val();
+                }
             } catch (Exception) {
                 _cost = '';
             }
             TinyJ(self.selectors.totalAmount).val(_cost);
-            OSCPayment.savePayment();
 
-            //OnestepcheckoutCoreUpdater.runRequest("http://mercadopago.local/onestepcheckout/ajax/savePaymentMethod/", {method:'post',parameters:Form.serialize("onestepcheckout-payment-method",true)});
+            if (isOsc()) {
+                //inovarti onestepcheckout
+                OSCPayment.savePayment();
+            } else if (isIdeasa()) {
+                //ideasa onestepcheckout
+                payment.update();
+            }
 
+        }
+
+        function isOsc()
+        {
+            return (typeof OSCPayment !== self.constants.undefined);
+        }
+
+        function isIdeasa()
+        {
+            return (typeof payment !== self.constants.undefined);
         }
 
         function registerAjaxObervers() {
             Ajax.Responders.register({
                 onCreate: function() {
-                    TinyJ(self.selectors.installments).disable();
+                    try {
+                        TinyJ(self.selectors.installments).disable();
+                    } catch (Exception) {
+                        showLogMercadoPago(Exception);
+                    }
+
                 },
                 onComplete: function() {
-                    TinyJ(self.selectors.installments).enable();
+                    try {
+                        TinyJ(self.selectors.installments).enable();
+                    } catch (Exception) {
+                        showLogMercadoPago(Exception);
+                    }
+
                 }
             });
         }
@@ -760,6 +795,11 @@ var MercadoPagoCustom = (function () {
                 selectorInstallments.enable();
 
                 selectorInstallments.val(installmentOption);
+
+                if (installmentOption){
+                    setTotalAmount();
+                }
+
                 checkCreateCardToken();
 
                 //função para tarjeta mercadopago
