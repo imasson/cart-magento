@@ -5,7 +5,7 @@ $_code = $this->getMethodCode();
 $_quote = $this->helper('checkout/cart')->getQuote();
 $grant_total = $_quote->getGrandTotal();
 $_totals = $_quote->getTotals();
-if (isset($_totals['mercadopago'])){
+if (isset($_totals['mercadopago'])) {
     $grant_total = $grant_total - $_totals['mercadopago']->getValue();
 }
 $base_url = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true);
