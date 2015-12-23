@@ -252,7 +252,10 @@ var MercadoPagoCustom = (function () {
 
             TinyJ(self.selectors.installments).getElem().stopObserving();
             TinyJ(self.selectors.installments).change(setTotalAmount);
-            registerAjaxObervers();
+
+            if (isOsc()) {
+                registerAjaxObervers();
+            }
 
             if (TinyJ(self.selectors.mercadopagoCustomOpt).isChecked()) {
                 payment.switchMethod(self.constants.mercadopagoCustom);
@@ -338,7 +341,9 @@ var MercadoPagoCustom = (function () {
                 _cardNumber.getElem().dispatchEvent(_event);
             }
 
-            registerAjaxObervers();
+            if (isOsc()) {
+                registerAjaxObervers();
+            }
 
             //show botão de retornar para lista de cartões
             returnListCard.show();
