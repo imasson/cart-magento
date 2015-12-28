@@ -1,1 +1,0 @@
-var IdeAddons=Class.create();IdeAddons.prototype={initialize:function(){}};

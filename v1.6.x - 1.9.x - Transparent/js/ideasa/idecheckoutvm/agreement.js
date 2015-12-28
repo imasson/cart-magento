@@ -1,1 +1,0 @@
-var CheckoutVmAgreement=Class.create();CheckoutVmAgreement.prototype={initialize:function(a){this.id=a;this.popup=null;this._bind()},_bind:function(){this.popup=new Control.Modal($(this.id),{width:400,overlayOpacity:0.75,className:"modal-idecheckoutvm",fade:true})},doClose:function(){this.popup.close()}};
