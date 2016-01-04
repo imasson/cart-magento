@@ -177,9 +177,9 @@ class MercadoPago_Core_Model_Core
         if (!$total) {
             $total = $order->getBasePrice();
         }
-        $total_cart = $total - $order->getBaseFinanceCostAmount() - $order->getBaseDiscountCouponAmount();
+        $totalCart = $total - $order->getBaseFinanceCostAmount() - $order->getBaseDiscountCouponAmount();
 
-        return number_format($total_cart, 2, '.', '');
+        return number_format($totalCart, 2, '.', '');
     }
 
     protected function getCustomerInfo($customer, $order)
@@ -207,7 +207,7 @@ class MercadoPago_Core_Model_Core
         $dataItems = array();
         foreach ($order->getAllVisibleItems() as $item) {
             $product = $item->getProduct();
-            $image = (string)Mage::helper('catalog/image')->init($product, 'image');
+            $image = (string) Mage::helper('catalog/image')->init($product, 'image');
 
             $dataItems[] = array(
                 "id"          => $item->getSku(),
