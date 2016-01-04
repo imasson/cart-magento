@@ -390,7 +390,6 @@ var MercadoPagoCustom = (function () {
                     } catch (Exception) {
                         showLogMercadoPago(Exception);
                     }
-
                 }
             });
         }
@@ -415,7 +414,7 @@ var MercadoPagoCustom = (function () {
             } else if (siteId == self.constants.brazil) {
 
                 excludeInputs.push(self.selectors.issuer);
-                excludeInputs.push(self.selectors.docType)
+                excludeInputs.push(self.selectors.docType);
 
             } else if (siteId == self.constants.mexico) {
 
@@ -1055,7 +1054,7 @@ var MercadoPagoCustom = (function () {
                         $formPayment.getElem(self.selectors.discountOkAmountDiscount).html(currency + couponAmount);
                         $formPayment.getElem(self.selectors.discountOkTotalAmount).html(currency + transactionAmount);
                         $formPayment.getElem(self.selectors.discountOkTotalAmountDiscount).html(currency + (transactionAmount - couponAmount));
-
+                        $formPayment.getElem(self.selectors.totalAmount).val(transactionAmount - couponAmount);
 
                         $formPayment.getElem(self.selectors.discountOkTerms).attribute("href", urlTerm);
                         $formPayment.getElem(self.selectors.discountAmount).val(couponAmount);
