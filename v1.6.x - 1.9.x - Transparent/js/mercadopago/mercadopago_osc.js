@@ -218,6 +218,7 @@ var MercadoPagoCustom = (function () {
                 //ideasa onestepcheckout
                 self.constants.checkout = 'idecheckoutvm';
                 payment.changeVisible('mercadopago_customticket', true);
+                TinyJ('#p_method_mercadopago_custom').click(selectCustomPaymentMethod);
             }
 
             //Show public key
@@ -339,6 +340,11 @@ var MercadoPagoCustom = (function () {
             }
 
             returnListCard.show();
+        }
+
+        function selectCustomPaymentMethod(event) {
+            TinyJ('#p_method_mercadopago_custom').getElem().stopObserving();
+            setTotalAmount();
         }
 
         function setTotalAmount() {
@@ -637,7 +643,7 @@ var MercadoPagoCustom = (function () {
             //hide loading
             hideLoading();
 
-            if (status == http.status.OK) {
+            if (status == http.status.OK && response != undefined) {
                 var paymentMethodId = response[0].id;
                 TinyJ(self.selectors.paymentMethodId).val(paymentMethodId);
                 if (response[0].id != undefined) {
