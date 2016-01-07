@@ -571,7 +571,7 @@ var MercadoPagoCustom = (function () {
             //hide loading
             hideLoading();
 
-            if (status == http.status.OK) {
+            if (status == http.status.OK && response != undefined) {
                 // do somethings ex: show logo of the payment method
                 var paymentMethodId = response[0].id;
                 TinyJ(self.selectors.paymentMethodId).val(paymentMethodId);
