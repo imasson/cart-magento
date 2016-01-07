@@ -1008,11 +1008,19 @@ var MercadoPagoCustom = (function () {
             }
         }
 
+        function selectCustomTicketPaymentMethod(event) {
+            TinyJ('#p_method_mercadopago_customticket').getElem().stopObserving();
+            initDiscountMercadoPagoCustomTicket();
+        }
+
         function initDiscountMercadoPagoCustomTicket() {
             showLogMercadoPago(self.messages.initTicket);
             //inicia o objeto
             TinyJ(self.selectors.ticketActionApply).click(applyDiscountCustomTicket);
             TinyJ(self.selectors.ticketActionRemove).click(removeDiscountCustomTicket);
+            if (isIdeasa()) {
+                TinyJ('#p_method_mercadopago_customticket').click(selectCustomTicketPaymentMethod);
+            }
             if (TinyJ(self.selectors.checkoutTicket).getElem(self.selectors.inputCouponDiscount).val() != '') {
                 applyDiscountCustomTicket();
             }
