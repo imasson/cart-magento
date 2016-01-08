@@ -59,4 +59,49 @@ class MercadoPago_MercadoEnvios_Model_Observer
         }
     }
 
+    public function createShipment($observer)
+    {
+
+        $merchant_order = $observer->getMerchantOrder();
+        if (!count($merchant_order['shipments']) > 0) {
+            return;
+        }
+        $data = $observer->getPayment();
+        $order = Mage::getModel('sales/order')->loadByIncrementId($data["external_reference"]);
+
+        //if order has shipments, status is updated. If it doesn't the shipment is created.
+        if ($merchant_order['shipments'][0]['status'] == 'ready_to_ship') {
+            if ($order->hasShipments()){
+                $shipment = $order->getShipmentsCollection()->getFirstItem();
+            } else {
+                $shipment = Mage::getModel('sales/service_order', $order)->prepareShipment();
+                $shipment->register();
+                $order->setIsInProcess(true);
+            }
+            $shipment->setShippingLabel($merchant_order['shipments'][0]['id']);
+
+            $clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
+            $clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
+            $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
+            $helper = Mage::helper('mercadopago_mercadoenvios');
+            $shipmentInfo = $helper->getShipmentInfo($merchant_order['shipments'][0]['id']);
+            Mage::helper('mercadopago')->log("Shipment Info", 'mercadopago-notification.log', $shipmentInfo);
+            $serviceInfo = $helper->getServiceInfo($merchant_order['shipments'][0]['service_id'], $merchant_order['site_id']);
+            Mage::helper('mercadopago')->log("Service Info by service id", 'mercadopago-notification.log', $serviceInfo);
+            if ($shipmentInfo->status == 200 && isset($shipmentInfo->tracking_number)) {
+                $tracking['number'] = str_replace('#{trackingNumber}', $shipmentInfo->tracking_number, $serviceInfo->tracking_url);
+                $tracking['title'] = MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios::CODE;
+                $track = Mage::getModel('sales/order_shipment_track')->addData($tracking);
+                $shipment->addTrack($track);
+                Mage::helper('mercadopago')->log("Track added", 'mercadopago-notification.log', $track);
+            }
+
+            Mage::getModel('core/resource_transaction')
+                ->addObject($shipment)
+                ->addObject($order)
+                ->save();
+        }
+    }
+
+
 }

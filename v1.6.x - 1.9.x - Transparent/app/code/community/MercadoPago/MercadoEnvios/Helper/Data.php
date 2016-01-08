@@ -181,10 +181,11 @@ class MercadoPago_MercadoEnvios_Helper_Data
         if ($shipmentId) {
             if ($shipment = Mage::getModel('sales/order_shipment')->load($shipmentId)) {
                 if ($shipment->getShippingLabel()) {
+                    $accessToken = Mage::helper('mercadopago')->getAccessToken();
                     $params = [
                         'shipment_ids'  => $shipment->getShippingLabel(),
                         'response_type' => 'zpl2',
-                        'access_token'  => Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN)
+                        'access_token'  => $accessToken
                     ];
 
                     return self::ME_SHIPMENT_LABEL_URL . '?' . http_build_query($params);
@@ -197,9 +198,11 @@ class MercadoPago_MercadoEnvios_Helper_Data
 
     public function getShipmentInfo($shipmentId)
     {
+        $accessToken = Mage::helper('mercadopago')->getAccessToken();
         $client = new Varien_Http_Client(self::ME_SHIPMENT_URL . $shipmentId);
         $client->setMethod(Varien_Http_Client::GET);
-        $client->setParameterGet('access_token', Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN));
+        $client->setParameterGet('access_token', $accessToken);
+
         try {
             $response = $client->request();
         } catch (Exception $e) {
