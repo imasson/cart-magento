@@ -170,12 +170,13 @@ class MercadoPago_Lib_Api {
     /**
      * Create a checkout preference
      * @param array $preference
+     * @param array $extra_params
      * @return array(json)
      */
-    public function create_preference($preference) {
+    public function create_preference($preference, $extra_params) {
         $access_token = $this->get_access_token();
 
-        $preference_result = MercadoPago_Lib_RestClient::post("/checkout/preferences?access_token=" . $access_token, $preference);
+        $preference_result = MercadoPago_Lib_RestClient::post("/checkout/preferences?access_token=" . $access_token, $preference, $extra_params);
         return $preference_result;
     }
 

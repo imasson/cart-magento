@@ -334,7 +334,10 @@ class MercadoPago_Core_Model_Core
         //seta sdk php mercadopago
         $mp = Mage::helper('mercadopago')->getApiInstance($access_token);
 
-        $response = $mp->post("/v1/payments", $preference);
+        $module_version = (string) Mage::getConfig()->getModuleConfig("MercadoPago_Core")->version;
+
+        $extra_params = array('platform: openplatform', 'type: magento', "SO: " . $module_version);
+        $response = $mp->post("/v1/payments", $preference, $extra_params);
         Mage::helper('mercadopago')->log("POST /v1/payments", 'mercadopago-custom.log', $response);
 
         if ($response['status'] == 200 || $response['status'] == 201) {
