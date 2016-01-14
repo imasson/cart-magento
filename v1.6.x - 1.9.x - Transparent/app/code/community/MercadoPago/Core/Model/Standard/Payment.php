@@ -45,11 +45,8 @@ class MercadoPago_Core_Model_Standard_Payment
         $pref = $this->makePreference();
         Mage::helper('mercadopago')->log("make array", 'mercadopago-standard.log', $pref);
 
-        $module_version = (string) Mage::getConfig()->getModuleConfig("MercadoPago_Core")->version;
-        $extra_params = array('platform: std', 'type: magento', "SO: " . $module_version);
-
         //faz o posto do pagamento
-        $response = $mp->create_preference($pref, $extra_params);
+        $response = $mp->create_preference($pref);
         Mage::helper('mercadopago')->log("create preference result", 'mercadopago-standard.log', $response);
 
         $array_assign = [];

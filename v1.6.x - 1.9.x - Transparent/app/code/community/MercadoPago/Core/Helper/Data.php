@@ -45,12 +45,17 @@ class MercadoPago_Core_Helper_Data
         }
         if ($params == 1) {
             $api = new MercadoPago_Lib_Api(func_get_arg(0));
+            $api->setPlatform('openplatform');
         } else {
             $api = new MercadoPago_Lib_Api(func_get_arg(0), func_get_arg(1));
+            $api->setPlatform('std');
         }
         if (Mage::getStoreConfigFlag('payment/mercadopago/sandbox_mode')) {
             $api->sandbox_mode(true);
         }
+
+        $api->setType('magento');
+        $api->setSO((string) Mage::getConfig()->getModuleConfig("MercadoPago_Core")->version);
 
         return $api;
 
