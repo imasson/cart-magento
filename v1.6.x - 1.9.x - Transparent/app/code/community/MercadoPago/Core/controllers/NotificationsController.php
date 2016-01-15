@@ -181,11 +181,11 @@ class MercadoPago_Core_NotificationsController
             }
 
             if ($data['coupon_amount']) {
-                $order->setDiscountCouponAmount($data['coupon_amount']);
-                $order->setBaseDiscountCouponAmount($data['coupon_amount']);
-                $balance = $data['total_paid_amount'] + $data['coupon_amount'] - $data['transaction_amount'];
+                $order->setDiscountCouponAmount($data['coupon_amount'] * -1);
+                $order->setBaseDiscountCouponAmount($data['coupon_amount'] * -1);
+                $balance = $data['total_paid_amount'] - ($data['transaction_amount'] - $data['coupon_amount'] + $data['shipping_cost']);
             } else {
-                $balance = $data['total_paid_amount'] - $data['transaction_amount'];
+                $balance = $data['total_paid_amount'] - $data['transaction_amount'] - $data['shipping_cost'];
             }
 
             if ($balance > 0) {
@@ -193,6 +193,7 @@ class MercadoPago_Core_NotificationsController
                 $order->setBaseFinanceCostAmount($balance);
             }
 
+            $order->setGrandTotal($data['total_paid_amount']);
 
             $status_save = $order->save();
             Mage::helper('mercadopago')->log("Update order", 'mercadopago-notification.log', $status_save->toString());
@@ -306,6 +307,7 @@ class MercadoPago_Core_NotificationsController
             "total_paid_amount",
             "coupon_amount",
             "installments",
+            "shipping_cost",
         );
 
         foreach ($fields as $field) {
