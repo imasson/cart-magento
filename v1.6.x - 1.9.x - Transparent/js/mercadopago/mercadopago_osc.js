@@ -218,7 +218,6 @@ var MercadoPagoCustom = (function () {
                 //ideasa onestepcheckout
                 self.constants.checkout = 'idecheckoutvm';
                 payment.changeVisible('mercadopago_customticket', true);
-                TinyJ('#p_method_mercadopago_custom').click(selectCustomPaymentMethod);
             }
 
             //Show public key
@@ -340,11 +339,6 @@ var MercadoPagoCustom = (function () {
             }
 
             returnListCard.show();
-        }
-
-        function selectCustomPaymentMethod(event) {
-            TinyJ('#p_method_mercadopago_custom').getElem().stopObserving();
-            setTotalAmount();
         }
 
         function setTotalAmount() {
@@ -643,7 +637,7 @@ var MercadoPagoCustom = (function () {
             //hide loading
             hideLoading();
 
-            if (status == http.status.OK && response != undefined) {
+            if (status == http.status.OK) {
                 var paymentMethodId = response[0].id;
                 TinyJ(self.selectors.paymentMethodId).val(paymentMethodId);
                 if (response[0].id != undefined) {
@@ -1008,19 +1002,11 @@ var MercadoPagoCustom = (function () {
             }
         }
 
-        function selectCustomTicketPaymentMethod(event) {
-            TinyJ('#p_method_mercadopago_customticket').getElem().stopObserving();
-            initDiscountMercadoPagoCustomTicket();
-        }
-
         function initDiscountMercadoPagoCustomTicket() {
             showLogMercadoPago(self.messages.initTicket);
             //inicia o objeto
             TinyJ(self.selectors.ticketActionApply).click(applyDiscountCustomTicket);
             TinyJ(self.selectors.ticketActionRemove).click(removeDiscountCustomTicket);
-            if (isIdeasa()) {
-                TinyJ('#p_method_mercadopago_customticket').click(selectCustomTicketPaymentMethod);
-            }
             if (TinyJ(self.selectors.checkoutTicket).getElem(self.selectors.inputCouponDiscount).val() != '') {
                 applyDiscountCustomTicket();
             }
