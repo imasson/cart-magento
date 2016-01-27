@@ -169,13 +169,16 @@ class MercadoPago_MercadoEnvios_Helper_Data
         foreach ($_shippingInfo->getTrackingInfo() as $track) {
             $lastTrack = array_pop($track);
             if (isset($lastTrack['title']) && $lastTrack['title'] == MercadoPago_MercadoEnvios_Model_Observer::CODE) {
-                if ($_shippingInfo->getTrackId()){
-                    $tracking = Mage::getModel('sales/order_shipment_track')->load($_shippingInfo->getTrackId());
-                } elseif ($_shippingInfo->getShipId()) {
-                    $tracking = Mage::getModel('sales/order_shipment_track')->load($_shippingInfo->getShipId(), 'parent_id');
-                } elseif ($_shippingInfo->getOrderId()) {
-                    $tracking = Mage::getModel('sales/order_shipment_track')->load($_shippingInfo->getOrderId(), 'order_id');
-                }
+                $tracking = Mage::getModel('sales/order_shipment_track')->getCollection()
+                    ->addFieldToFilter(
+                        array('entity_id','parent_id','order_id',),
+                        array(
+                            array('eq' => $_shippingInfo->getTrackId()),
+                            array('eq' => $_shippingInfo->getShipId()),
+                            array('eq' => $_shippingInfo->getOrderId()),
+                        ))
+                    ->getFirstItem();
+
                 if ($tracking->getId()) {
                     return $tracking['description'];
                 }
