@@ -23,6 +23,8 @@ class MercadoPago_Core_NotificationsController
     protected $_mpcartid = null;
     protected $_sendemail = false;
     protected $_hash = null;
+    protected $_finalStatus = ['rejected', 'cancelled', 'refunded', 'charge_back'];
+    protected $_notFinalStatus = ['authorized', 'process', 'in_mediation'];
 
     const LOG_FILE = 'mercadopago-notification.log';
 
@@ -39,12 +41,32 @@ class MercadoPago_Core_NotificationsController
         return $data;
     }
 
-    protected function getStatusFinal($dataStatus)
+    private function _dateCompare($a, $b)
+    {
+        $t1 = strtotime($a);
+        $t2 = strtotime($b);
+        return $t1 - $t2;
+    }
+
+    protected function _getLastPayment($payments, $status) {
+        $dates = [];
+        foreach ($payments as $payment) {
+            if (in_array($payment['status'], $status)) {
+                $dates[] = $payment['last_modified'];
+            }
+        }
+        return usort($dates, '_dateCompare');
+    }
+
+    protected function getStatusFinal($dataStatus, $payments)
     {
         $status_final = "";
         $statuses = explode('|', $dataStatus);
         foreach ($statuses as $status) {
             $status = str_replace(' ', '', $status);
+            if (in_array($status, $this->_notFinalStatus)) {
+                $lastPayment = $this->_getLastPayment($payments, $this->_notFinalStatus);
+            }
             if ($status_final == "") {
                 $status_final = $status;
             } else {
@@ -77,7 +99,11 @@ class MercadoPago_Core_NotificationsController
 
                 if (count($merchant_order['payments']) > 0) {
                     $data = $this->_getDataPayments($merchant_order);
-                    $status_final = $this->getStatusFinal($data['status']);
+                    if ($merchant_order['total_amount'] == $merchant_order['paid_amount']) {
+                        $status_final = 'approved';
+                    } else {
+                        $status_final = $this->getStatusFinal($data['status'], $merchant_order['payments']);
+                    }
                     $shipmentData = (isset($merchant_order['shipments'][0])) ? $merchant_order['shipments'][0] : [];
                     Mage::helper('mercadopago')->log("Update Order", self::LOG_FILE);
                     Mage::helper('mercadopago')->setStatusUpdated($data);

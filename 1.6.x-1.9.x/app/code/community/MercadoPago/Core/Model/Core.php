@@ -253,6 +253,7 @@ class MercadoPago_Core_Model_Core
         $preference = [];
 
         $preference['notification_url'] = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK) . "mercadopago/notifications/custom";
+        $preference['notification_url'] = "http://86018ba6.ngrok.io/mercadopago/notifications/custom";
         $preference['description'] = Mage::helper('mercadopago')->__("Order # %s in store %s", $orderId, Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK, true));
         $preference['transaction_amount'] = (float)$this->getAmount();
 
@@ -461,7 +462,7 @@ class MercadoPago_Core_Model_Core
         }
     }
 
-    public function setStatusOrder($payment, $stateObject = null)
+    public function setStatusOrder($payment)
     {
         $helper = Mage::helper('mercadopago');
         $order = Mage::getModel('sales/order')->loadByIncrementId($payment["external_reference"]);
@@ -489,7 +490,7 @@ class MercadoPago_Core_Model_Core
                 $this->_generateCreditMemo($order, $payment);
             }
             //if state is not complete updates according to setting
-            $this->_updateStatus($order, $helper, $stateObject, $status, $message);
+            $this->_updateStatus($order, $helper, $status, $message);
 
             $statusSave = $order->save();
             $helper->log("Update order", 'mercadopago.log', $statusSave->getData());
@@ -503,15 +504,11 @@ class MercadoPago_Core_Model_Core
         }
     }
 
-    protected function _updateStatus($order, $helper, $stateObject, $status, $message)
+    protected function _updateStatus($order, $helper, $status, $message)
     {
         if ($order->getState() !== Mage_Sales_Model_Order::STATE_COMPLETE) {
             $statusOrder = $helper->getStatusOrder($status);
-            if ($stateObject) {
-                $stateObject->setStatus($statusOrder);
-                $stateObject->setState($helper->_getAssignedState($statusOrder));
-                $stateObject->setIsNotified(true);
-            }
+
 
             $order->setState($helper->_getAssignedState($statusOrder));
             $order->addStatusToHistory($statusOrder, $message, true);
