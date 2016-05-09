@@ -15,6 +15,17 @@ class MercadoPago_MercadoEnvios_Helper_Data
     protected $_products = [];
 
     public static $enabled_methods = ['mla', 'mlb', 'mlm'];
+    protected $_maxWeight = ['mla' => '25000', 'mlb' => '30000', 'mlm' => ''];
+    protected $_individualDimensions = ['height' => ['mla' => ['min' => '0', 'max' => '70'], 'mlb' => ['min' => '2', 'max' => '105'], 'mlm' => ''],
+                                        'width'  => ['mla' => ['min' => '0', 'max' => '70'], 'mlb' => ['min' => '11', 'max' => '105'], 'mlm' => ''],
+                                        'length' => ['mla' => ['min' => '0', 'max' => '70'], 'mlb' => ['min' => '16', 'max' => '105'], 'mlm' => ''],
+                                        'weight' => ['mla' => ['min' => '0', 'max' => '25000'], 'mlb' => ['min' => '0', 'max' => '30000'], 'mlm' => ''],
+    ];
+    protected $_globalMaxDimensions = ['mla' => '210',
+                                       'mlb' => '200',
+                                       'mlm' => '200',
+    ];
+
 
     /**
      * @param $quote Mage_Sales_Model_Quote
@@ -25,23 +36,28 @@ class MercadoPago_MercadoEnvios_Helper_Data
         $height = 0;
         $length = 0;
         $weight = 0;
+        $bulk = 0;
+        $helperItem = Mage::helper('mercadopago_mercadoenvios/itemData');
         foreach ($items as $item) {
-            $width += $this->_getShippingDimension($item, 'width');
-            $height += $this->_getShippingDimension($item, 'height');
-            $length += $this->_getShippingDimension($item, 'length');
-            $weight += $this->_getShippingDimension($item, 'weight');
+            $tempWidth = $this->_getShippingDimension($item, 'width');
+            $tempHeight = $this->_getShippingDimension($item, 'height');
+            $tempLength = $this->_getShippingDimension($item, 'length');
+            $tempWeight = $this->_getShippingDimension($item, 'weight');
+            $bulk += ($tempWidth * $tempHeight * $tempLength) * $helperItem->itemGetQty($item);
+            $width += $tempWidth;
+            $height += $tempHeight;
+            $length += $tempLength;
+            $weight += $tempWeight;
         }
         $height = ceil($height);
         $width = ceil($width);
         $length = ceil($length);
         $weight = ceil($weight);
 
-        if (!($height > 0 && $length > 0 && $width > 0 && $weight > 0)) {
-            $this->log('Invalid dimensions in cart:', ['width' => $width, 'height' => $height, 'length' => $length, 'weight' => $weight,]);
-            Mage::throwException('Invalid dimensions cart');
-        }
+        $this->validateCartDimension($height, $width, $length, $weight);
+        $bulk = ceil(pow($bulk, 1/3));
 
-        return $height . 'x' . $width . 'x' . $length . ',' . $weight;
+        return $bulk . 'x' . $bulk . 'x' . $bulk . ',' . $weight;
 
     }
 
@@ -56,20 +72,36 @@ class MercadoPago_MercadoEnvios_Helper_Data
                 $this->_products[$item->getProductId()] = Mage::getModel('catalog/product')->load($item->getProductId());
             }
             $product = $this->_products[$item->getProductId()];
-            $helperItem = Mage::helper('mercadopago_mercadoenvios/itemData');
             $result = $product->getData($attributeMapped);
             $result = $this->getAttributesMappingUnitConversion($type, $result);
-            $qty = $helperItem->itemGetQty($item);
-            $result = $result * $qty;
-            if (empty($result)) {
-                $this->log('Invalid dimension product: PRODUCT ', $item->getData());
-                Mage::throwException('Invalid dimensions product');
-            }
+            $this->validateProductDimension($result, $type, $item);
 
             return $result;
         }
 
         return 0;
+    }
+
+    protected function validateProductDimension($dimension, $type, $item)
+    {
+        $country = Mage::getStoreConfig('payment/mercadopago/country');
+        if (empty($dimension) || $dimension > $this->_individualDimensions[$type][$country]['max'] || $dimension < $this->_individualDimensions[$type][$country]['min']) {
+            $this->log('Invalid dimension product: PRODUCT ', $item->getData());
+            Mage::throwException('Invalid dimensions product');
+        }
+    }
+
+    protected function validateCartDimension($height, $width, $length, $weight)
+    {
+        $country = Mage::getStoreConfig('payment/mercadopago/country');
+        if (!isset($this->_globalMaxDimensions[$country])) {
+            return;
+        }
+
+        if (($height + $width + $length) > $this->_globalMaxDimensions[$country]) {
+            $this->log('Invalid dimensions in cart:', ['width' => $width, 'height' => $height, 'length' => $length, 'weight' => $weight,]);
+            Mage::throwException('Invalid dimensions cart');
+        }
     }
 
     protected function _getConfigAttributeMapped($type)

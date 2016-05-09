@@ -18,6 +18,7 @@ class MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios
     protected $_methods;
     protected $_request;
 
+
     /**
      * Collect and get rates
      *
