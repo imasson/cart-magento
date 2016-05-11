@@ -2,8 +2,8 @@
 Feature: As a customer I want to choose shipping method MercadoEnvios
 
   Background:
-    Given User "test_user_58666377@testuser.com" "magento" exists
-    And I am logged in as "test_user_58666377@testuser.com" "magento"
+    Given User "test_user_58666377+01@testuser.com" "magento" exists
+    And I am logged in as "test_user_58666377+01@testuser.com" "magento"
     And I empty cart
     And I create mp attributes
     And I map attributes "mp_width" "mp_height" "mp_length" "mp_weight"
