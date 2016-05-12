@@ -427,6 +427,10 @@ class FeatureContext
         $config = new Mage_Core_Model_Config();
         $config->saveConfig($arg1, $arg2, 'default', 0);
 
+        $dir = Mage::getBaseDir('cache');
+        foreach(glob($dir.'/*.*') as $v){
+            unlink($v);
+        }
         Mage::app()->getCacheInstance()->flush();
     }
 
