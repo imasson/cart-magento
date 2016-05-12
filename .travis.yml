@@ -73,6 +73,7 @@ before_script:
   - ls -al bin/
   - bin/phing -f .travis/build/build.xml magento_configuration
   - rm -rf htdocs/var/cache
+  - sudo chmod 777 -R htdocs/var
   - cd 1.6.x-1.9.x/dev/MercadoPago/tests/
   - cp behat.yml.dist behat.yml
   - sed -e "s?%MAGENTO_URL%?http://${MAGENTO_URL}/?g" --in-place behat.yml
