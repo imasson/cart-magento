@@ -46,7 +46,11 @@ class MercadoPago_MercadoEnvios_Helper_Data
         $length = ceil($length);
         $weight = ceil($weight);
 
-        $helperCarrier->validateCartDimension($height, $width, $length, $weight);
+        //$helperCarrier->validateCartDimension($height, $width, $length, $weight);
+        if (!($height > 0 && $length > 0 && $width > 0 && $weight > 0)) {
+            $this->log('Invalid dimensions in cart:', ['width' => $width, 'height' => $height, 'length' => $length, 'weight' => $weight,]);
+            Mage::throwException('Invalid dimensions cart');
+        };
         $bulk = ceil(pow($bulk, 1/3));
 
         return $bulk . 'x' . $bulk . 'x' . $bulk . ',' . $weight;

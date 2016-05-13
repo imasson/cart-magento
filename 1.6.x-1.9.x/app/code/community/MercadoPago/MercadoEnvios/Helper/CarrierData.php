@@ -36,8 +36,11 @@ class MercadoPago_MercadoEnvios_Helper_CarrierData
             $product = $this->_products[$item->getProductId()];
             $result = $product->getData($attributeMapped);
             $result = $this->getAttributesMappingUnitConversion($type, $result);
-            $this->validateProductDimension($result, $type, $item);
-
+            //$this->validateProductDimension($result, $type, $item);
+            if (empty($result)) {
+                $this->log('Invalid dimension product: PRODUCT ', $item->getData());
+                Mage::throwException('Invalid dimensions product');
+            }
             return $result;
         }
 
