@@ -39,7 +39,7 @@ class MercadoPago_MercadoEnvios_Helper_Data
         $weight = 0;
         $bulk = 0;
         $helperItem = Mage::helper('mercadopago_mercadoenvios/itemData');
-        $helperCarrier = Mage::helper('mercadopago_mercadoenvios/carrierData');
+        //$helperCarrier = Mage::helper('mercadopago_mercadoenvios/carrierData');
         foreach ($items as $item) {
             $tempWidth = $this->_getShippingDimension($item, 'width');
             $tempHeight = $this->_getShippingDimension($item, 'height');
