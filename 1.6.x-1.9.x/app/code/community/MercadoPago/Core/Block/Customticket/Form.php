@@ -28,7 +28,7 @@ class MercadoPago_Core_Block_Customticket_Form
     public function getTicketsOptions()
     {
         $payment_methods = Mage::getModel('mercadopago/core')->getPaymentMethods();
-        $tickets = array();
+        $tickets = [];
 
         //percorre todos os payments methods
         foreach ($payment_methods['response'] as $pm) {
