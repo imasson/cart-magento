@@ -140,6 +140,7 @@ class MercadoPago_Core_NotificationsController
         $request = $this->getRequest();
         //notification received
         $helper = Mage::helper('mercadopago');
+        $statusHelper = Mage::helper('mercadopago/statusUpdate');
         $shipmentData = '';
         $merchantOrder = '';
         $helper->log("Standard Received notification", self::LOG_FILE, $request->getParams());
@@ -182,7 +183,7 @@ class MercadoPago_Core_NotificationsController
         }
 
         $helper->log("Update Order", self::LOG_FILE);
-        $helper->setStatusUpdated($data);
+        $statusHelper->setStatusUpdated($data);
         $core->updateOrder($data);
         if ($this->_shipmentExists($shipmentData, $merchantOrder)) {
             Mage::dispatchEvent('mercadopago_standard_notification_before_set_status',
@@ -231,7 +232,7 @@ class MercadoPago_Core_NotificationsController
                 $payment = Mage::helper('mercadopago')->setPayerInfo($payment);
 
                 Mage::helper('mercadopago')->log("Update Order", self::LOG_FILE);
-                Mage::helper('mercadopago')->setStatusUpdated($payment);
+                Mage::helper('mercadopago/updateStatus')->setStatusUpdated($payment);
                 $core->updateOrder($payment);
                 $setStatusResponse = $core->setStatusOrder($payment);
                 $this->getResponse()->setBody($setStatusResponse['text']);
@@ -252,7 +253,7 @@ class MercadoPago_Core_NotificationsController
     {
         Mage::helper('mercadopago')->log("Format Array", self::LOG_FILE);
 
-        $fields = array(
+        $fields = [
             "status",
             "status_detail",
             "id",
@@ -263,7 +264,7 @@ class MercadoPago_Core_NotificationsController
             "installments",
             "shipping_cost",
             "amount_refunded",
-        );
+        ];
 
         foreach ($fields as $field) {
             if (isset($payment[$field])) {
