@@ -447,44 +447,26 @@ class MercadoPago_Core_Model_Core
         return $details_discount;
     }
 
-    protected function _createInvoice($order, $message)
-    {
-        if (!$order->hasInvoices()) {
-            $invoice = $order->prepareInvoice();
-            $invoice->register();
-            $invoice->pay();
-            Mage::getModel('core/resource_transaction')
-                ->addObject($invoice)
-                ->addObject($invoice->getOrder())
-                ->save();
-
-            $invoice->sendEmail(true, $message);
-        }
-    }
-
-    
-
-    public function updateOrder($data)
+    public function updateOrder($order = null, $data)
     {
         $helper = Mage::helper('mercadopago');
-        $helper->log("Update Order", 'mercadopago-notification.log');
+        $statusHelper = Mage::helper('mercadopago/statusUpdate');
+        $helper->log('Update Order', 'mercadopago-notification.log');
 
-        if (!isset($data["external_reference"])) {
+        if (!isset($data['external_reference'])) {
             return;
         }
-        $order = Mage::getModel('sales/order')->loadByIncrementId($data["external_reference"]);
 
-        if (!$order->getId()) {
-            return;
+        if (!$order) {
+            $order = Mage::getModel('sales/order')->loadByIncrementId($data['external_reference']);
         }
         $paymentOrder = $order->getPayment();
         $this->_saveTransaction($data, $paymentOrder);
 
-        if ($helper->isStatusUpdated()) {
+        if ($statusHelper->isStatusUpdated()) {
             return;
         }
         try {
-
             $additionalFields = [
                 'status',
                 'status_detail',
@@ -508,12 +490,12 @@ class MercadoPago_Core_Model_Core
             }
 
             $paymentStatus = $paymentOrder->save();
-            $helper->log("Update Payment", 'mercadopago.log', $paymentStatus->getData());
+            $helper->log('Update Payment', 'mercadopago.log', $paymentStatus->getData());
 
             $statusSave = $order->save();
-            $helper->log("Update order", 'mercadopago.log', $statusSave->getData());
+            $helper->log('Update order', 'mercadopago.log', $statusSave->getData());
         } catch (Exception $e) {
-            $helper->log("Error in update order status: " . $e, 'mercadopago.log');
+            $helper->log('Error in update order status: ' . $e, 'mercadopago.log');
             $this->getResponse()->setBody($e);
 
             $this->getResponse()->setHttpResponseCode(MercadoPago_Core_Helper_Response::HTTP_BAD_REQUEST);
@@ -530,7 +512,7 @@ class MercadoPago_Core_Model_Core
             $transaction->setIsClosed(true);
             $transaction->save();
         } catch (Exception $e) {
-            Mage::helper('mercadopago')->log("error in update order status: " . $e, 'mercadopago.log');
+            Mage::helper('mercadopago')->log('error in update order status: ' . $e, 'mercadopago.log');
         }
     }
 

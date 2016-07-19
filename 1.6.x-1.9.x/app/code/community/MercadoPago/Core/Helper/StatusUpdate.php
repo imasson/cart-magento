@@ -81,17 +81,15 @@ class MercadoPago_Core_Helper_StatusUpdate
     public function setStatusOrder($payment)
     {
         $helper = Mage::helper('mercadopago');
-        $statusHelper = Mage::helper('mercadopago/statusUpdate');
-        $order = Mage::getModel('sales/order')->loadByIncrementId($payment["external_reference"]);
 
-        $status = $statusHelper->getStatus($payment);
-        $message = $statusHelper->getMessage($status, $payment);
-        if ($statusHelper->isStatusUpdated()) {
+        $status = $this->getStatus($payment);
+        $message = $this->getMessage($status, $payment);
+        if ($this->isStatusUpdated()) {
             return ['body' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
         }
 
         try {
-            $statusSave = $statusHelper->update($order, $payment, $message);
+            $statusSave = $this->update($payment, $message);
 
             $helper->log("Update order", 'mercadopago.log', $statusSave->getData());
             $helper->log($message, 'mercadopago.log');
@@ -228,6 +226,21 @@ class MercadoPago_Core_Helper_StatusUpdate
         $lastPaymentIndex = $this->_getLastPaymentIndex($payments, $this->_finalStatus);
 
         return $payments[$lastPaymentIndex]['status'];
+    }
+
+    protected function _createInvoice($order, $message)
+    {
+        if (!$order->hasInvoices()) {
+            $invoice = $order->prepareInvoice();
+            $invoice->register();
+            $invoice->pay();
+            Mage::getModel('core/resource_transaction')
+                ->addObject($invoice)
+                ->addObject($invoice->getOrder())
+                ->save();
+
+            $invoice->sendEmail(true, $message);
+        }
     }
 
 }
