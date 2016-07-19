@@ -462,31 +462,7 @@ class MercadoPago_Core_Model_Core
         }
     }
 
-    public function setStatusOrder($payment)
-    {
-        $helper = Mage::helper('mercadopago');
-        $statusHelper = Mage::helper('mercadopago/statusUpdate');
-        $order = Mage::getModel('sales/order')->loadByIncrementId($payment["external_reference"]);
-
-        $status = $statusHelper->getStatus($payment);
-        $message = $statusHelper->getMessage($status, $payment);
-        if ($statusHelper->isStatusUpdated()) {
-            return ['text' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
-        }
-
-        try {
-            $statusSave = $statusHelper->update($order, $payment, $message);
-
-            $helper->log("Update order", 'mercadopago.log', $statusSave->getData());
-            $helper->log($message, 'mercadopago.log');
-
-            return ['text' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
-        } catch (Exception $e) {
-            $helper->log("error in set order status: " . $e, 'mercadopago.log');
-
-            return ['text' => $e, 'code' => MercadoPago_Core_Helper_Response::HTTP_BAD_REQUEST];
-        }
-    }
+    
 
     public function updateOrder($data)
     {
