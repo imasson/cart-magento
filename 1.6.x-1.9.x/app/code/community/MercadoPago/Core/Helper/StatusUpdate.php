@@ -5,7 +5,10 @@ class MercadoPago_Core_Helper_StatusUpdate
 {
 
     protected $_statusUpdatedFlag = false;
+    protected $_order = false;
 
+    protected $_finalStatus = ['rejected', 'cancelled', 'refunded', 'charge_back'];
+    protected $_notFinalStatus = ['authorized', 'process', 'in_mediation'];
 
     private $_rawMessage;
 
@@ -14,66 +17,92 @@ class MercadoPago_Core_Helper_StatusUpdate
         return $this->_statusUpdatedFlag;
     }
 
-    public function setStatusUpdated($notificationData)
+    public function setStatusUpdated($notificationData, $order)
     {
-        $order = Mage::getModel('sales/order')->loadByIncrementId($notificationData["external_reference"]);
+        $this->_order = $order;
         $status = $notificationData['status'];
         $statusDetail = $notificationData['status_detail'];
-        $currentStatus = $order->getPayment()->getAdditionalInformation('status');
-        if ($status == $currentStatus && $order->getState() === Mage_Sales_Model_Order::STATE_COMPLETE) {
+        $currentStatus = $this->_order->getPayment()->getAdditionalInformation('status');
+        $currentStatusDetail = $this->_order->getPayment()->getAdditionalInformation('status_detail');
+        if ($status == $currentStatus && $statusDetail == $currentStatusDetail/*$this->_order->getState() === Mage_Sales_Model_Order::STATE_COMPLETE*/) {
             $this->_statusUpdatedFlag = true;
         }
     }
 
-    protected function _updateStatus($order, $status, $message, $statusDetail)
+    protected function _updateStatus($status, $message, $statusDetail)
     {
-        if ($order->getState() !== Mage_Sales_Model_Order::STATE_COMPLETE) {
+        if ($this->_order->getState() !== Mage_Sales_Model_Order::STATE_COMPLETE) {
             $statusOrder = $this->getStatusOrder($status, $statusDetail);
 
             if (isset($statusOrder)) {
-                $order->setState($this->_getAssignedState($statusOrder));
-                $order->addStatusToHistory($statusOrder, $message, true);
-                $order->sendOrderUpdateEmail(true, $message);
+                $this->_order->setState($this->_getAssignedState($statusOrder));
+                $this->_order->addStatusToHistory($statusOrder, $message, true);
+                $this->_order->sendOrderUpdateEmail(true, $message);
             }
         }
     }
 
-    protected function _generateCreditMemo($order, $payment)
+    protected function _generateCreditMemo($payment)
     {
         if (isset($payment['amount_refunded']) && $payment['amount_refunded'] > 0 && $payment['amount_refunded'] == $payment['total_paid_amount']) {
-            $order->getPayment()->registerRefundNotification($payment['amount_refunded']);
-            $creditMemo = array_pop($order->getCreditmemosCollection()->setPageSize(1)->setCurPage(1)->load()->getItems());
+            $this->_order->getPayment()->registerRefundNotification($payment['amount_refunded']);
+            $creditMemo = array_pop($this->_order->getCreditmemosCollection()->setPageSize(1)->setCurPage(1)->load()->getItems());
             foreach ($creditMemo->getAllItems() as $creditMemoItem) {
                 $creditMemoItem->setBackToStock(Mage::helper('cataloginventory')->isAutoReturnEnabled());
             }
             $creditMemo->save();
-            $order->cancel();
+            $this->_order->cancel();
         }
     }
 
-    protected function _update($order, $payment, $message) {
+    public function update($payment, $message) {
         $status = $payment['status'];
         $statusDetail = $payment['status_detail'];
 
         if ($status == 'approved') {
-            Mage::helper('mercadopago')->setOrderSubtotals($payment, $order);
-            $this->_createInvoice($order, $message);
+            Mage::helper('mercadopago')->setOrderSubtotals($payment, $this->_order);
+            $this->_createInvoice($this->_order, $message);
             //Associate card to customer
-            $additionalInfo = $order->getPayment()->getAdditionalInformation();
+            $additionalInfo = $this->_order->getPayment()->getAdditionalInformation();
             if (isset($additionalInfo['token'])) {
                 Mage::getModel('mercadopago/custom_payment')->customerAndCards($additionalInfo['token'], $payment);
             }
 
         } elseif ($status == 'refunded' || $status == 'cancelled') {
             //generate credit memo and return items to stock according to setting
-            $this->_generateCreditMemo($order, $payment);
+            $this->_generateCreditMemo($payment);
         }
         //if state is not complete updates according to setting
-        $this->_updateStatus($order, $status, $message, $statusDetail);
+        $this->_updateStatus($status, $message, $statusDetail);
 
-        return $order->save();
+        return $this->_order->save();
     }
 
+    public function setStatusOrder($payment)
+    {
+        $helper = Mage::helper('mercadopago');
+        $statusHelper = Mage::helper('mercadopago/statusUpdate');
+        $order = Mage::getModel('sales/order')->loadByIncrementId($payment["external_reference"]);
+
+        $status = $statusHelper->getStatus($payment);
+        $message = $statusHelper->getMessage($status, $payment);
+        if ($statusHelper->isStatusUpdated()) {
+            return ['body' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
+        }
+
+        try {
+            $statusSave = $statusHelper->update($order, $payment, $message);
+
+            $helper->log("Update order", 'mercadopago.log', $statusSave->getData());
+            $helper->log($message, 'mercadopago.log');
+
+            return ['body' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
+        } catch (Exception $e) {
+            $helper->log("error in set order status: " . $e, 'mercadopago.log');
+
+            return ['body' => $e, 'code' => MercadoPago_Core_Helper_Response::HTTP_BAD_REQUEST];
+        }
+    }
 
     public function getMessage($status, $payment)
     {
@@ -105,7 +134,7 @@ class MercadoPago_Core_Helper_StatusUpdate
             case 'approved': {
                 $status = Mage::getStoreConfig('payment/mercadopago/order_status_approved');
 
-                if ($statusDetail == 'partially_refunded') { //MIRAR SI canCreditMemo
+                if ($statusDetail == 'partially_refunded' && $this->_order->canCreditMemo()) {
                     $status = Mage::getStoreConfig('payment/mercadopago/order_status_partially_refunded');
                 }
                 break;
@@ -136,6 +165,69 @@ class MercadoPago_Core_Helper_StatusUpdate
         }
 
         return $status;
+    }
+
+    protected function _dateCompare($a, $b)
+    {
+        $t1 = strtotime($a['value']);
+        $t2 = strtotime($b['value']);
+
+        return $t2 - $t1;
+    }
+
+    /**
+     * @param $payments
+     * @param $status
+     *
+     * @return int
+     */
+    protected function _getLastPaymentIndex($payments, $status)
+    {
+        $dates = [];
+        foreach ($payments as $key => $payment) {
+            if (in_array($payment['status'], $status)) {
+                $dates[] = ['key' => $key, 'value' => $payment['last_modified']];
+            }
+        }
+        usort($dates, array(get_class($this), "_dateCompare"));
+        if ($dates) {
+            $lastModified = array_pop($dates);
+
+            return $lastModified['key'];
+        }
+
+        return 0;
+    }
+
+    /**
+     * Returns status that must be set to order, if a not final status exists
+     * then the last of this statuses is returned. Else the last of final statuses
+     * is returned
+     *
+     * @param $dataStatus
+     * @param $merchantOrder
+     *
+     * @return string
+     */
+    public function getStatusFinal($dataStatus, $merchantOrder)
+    {
+        if (isset($merchantOrder['paid_amount']) && $merchantOrder['total_amount'] == $merchantOrder['paid_amount']) {
+            return 'approved';
+        }
+        $payments = $merchantOrder['payments'];
+        $statuses = explode('|', $dataStatus);
+        foreach ($statuses as $status) {
+            $status = str_replace(' ', '', $status);
+            if (in_array($status, $this->_notFinalStatus)) {
+                $lastPaymentIndex = $this->_getLastPaymentIndex($payments, $this->_notFinalStatus);
+
+                return $payments[$lastPaymentIndex]['status'];
+            }
+        }
+
+        $lastPaymentIndex = $this->_getLastPaymentIndex($payments, $this->_finalStatus);
+
+        return $payments[$lastPaymentIndex]['status'];
     }
 
 }
