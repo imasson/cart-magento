@@ -100,10 +100,13 @@ class MercadoPago_Core_NotificationsController
                 $payment = $response['response'];
 
                 $payment = $this->_helper->setPayerInfo($payment);
-
+                $this->_order = Mage::getModel('sales/order')->loadByIncrementId($payment['external_reference']);
+                if (!$this->_orderExists()) {
+                    return;
+                }
                 $this->_helper->log('Update Order', self::LOG_FILE);
-                $this->_statusHelper->setStatusUpdated($payment);
-                $this->_core->updateOrder($payment);
+                $this->_statusHelper->setStatusUpdated($payment, $this->_order);
+                $this->_core->updateOrder($this->_order, $payment);
                 $setStatusResponse = $this->_statusHelper->setStatusOrder($payment);
                 $this->_setResponse($setStatusResponse['body'], $setStatusResponse['code']);
                 $this->_helper->log('Http code', self::LOG_FILE, $this->getResponse()->getHttpResponseCode());

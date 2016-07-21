@@ -24,7 +24,7 @@ class MercadoPago_Core_Helper_StatusUpdate
         $statusDetail = $notificationData['status_detail'];
         $currentStatus = $this->_order->getPayment()->getAdditionalInformation('status');
         $currentStatusDetail = $this->_order->getPayment()->getAdditionalInformation('status_detail');
-        if ($status == $currentStatus && $statusDetail == $currentStatusDetail/*$this->_order->getState() === Mage_Sales_Model_Order::STATE_COMPLETE*/) {
+        if ($status == $currentStatus && $statusDetail == $currentStatusDetail) {
             $this->_statusUpdatedFlag = true;
         }
     }
@@ -40,6 +40,20 @@ class MercadoPago_Core_Helper_StatusUpdate
                 $this->_order->sendOrderUpdateEmail(true, $message);
             }
         }
+    }
+
+    /**
+     * Get the assigned state of an order status
+     *
+     * @param string $status
+     */
+    public function _getAssignedState($status)
+    {
+        $item = Mage::getResourceModel('sales/order_status_collection')
+            ->joinStates()
+            ->addFieldToFilter('main_table.status', $status);
+
+        return array_pop($item->getItems())->getState();
     }
 
     protected function _generateCreditMemo($payment)

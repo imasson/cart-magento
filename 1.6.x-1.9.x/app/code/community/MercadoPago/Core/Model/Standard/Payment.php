@@ -219,7 +219,6 @@ class MercadoPago_Core_Model_Standard_Payment
         ];
 
         $arr['notification_url'] = Mage::getUrl('mercadopago/notifications/standard');
-        $arr['notification_url'] =  'http://10ed3f3f.ngrok.io/mercadopago/notifications/standard';
 
         $arr['payment_methods']['excluded_payment_methods'] = $this->getExcludedPaymentsMethods();
         $installments = $this->getConfigData('installments');

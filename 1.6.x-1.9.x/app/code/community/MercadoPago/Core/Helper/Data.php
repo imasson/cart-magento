@@ -106,20 +106,6 @@ class MercadoPago_Core_Helper_Data
         return $accessToken;
     }
 
-    /**
-     * Get the assigned state of an order status
-     *
-     * @param string $status
-     */
-    public function _getAssignedState($status)
-    {
-        $item = Mage::getResourceModel('sales/order_status_collection')
-            ->joinStates()
-            ->addFieldToFilter('main_table.status', $status);
-
-        return array_pop($item->getItems())->getState();
-    }
-
     public function setOrderSubtotals($data, $order)
     {
         if (isset($data['total_paid_amount'])) {
