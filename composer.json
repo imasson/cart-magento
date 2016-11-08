@@ -5,6 +5,13 @@
     "homepage": "https://github.com/mercadopago/cart-magento",
     "require": {
         "php": ">=5.4",
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon/magento-composer-installer": "*",
+        "mercadopago/px-php" : "*"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/imasson/px-php/"
+        }
+    ]
 }

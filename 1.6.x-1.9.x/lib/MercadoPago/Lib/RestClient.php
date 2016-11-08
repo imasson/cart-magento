@@ -87,19 +87,30 @@ class MercadoPago_Lib_RestClient {
         return $response;
     }
 
-    public static function get($uri, $content_type = "application/json", $extra_params = array()) {
-        return self::exec("GET", $uri, null, $content_type, $extra_params);
+    public static function get($request) {
+        //$request['url_query'] = $request['params'];
+        \MercadoPago\MercadoPagoSdk::initialize();
+        return \MercadoPago\MercadoPagoSdk::restClient()->get($request['uri'], $request);
     }
 
-    public static function post($uri, $data, $content_type = "application/json", $extra_params = array()) {
-        return self::exec("POST", $uri, $data, $content_type, $extra_params);
+    public static function post($request) {
+        $request['url_query'] = $request['params'];
+        $request['json_data'] = $request['data'];
+
+        return \MercadoPago\MercadoPagoSdk::restClient()->post($request['uri'], $request);
     }
 
-    public static function put($uri, $data, $content_type = "application/json", $extra_params = array()) {
-        return self::exec("PUT", $uri, $data, $content_type, $extra_params);
+    public static function put($request) {
+        $request['url_query'] = $request['params'];
+        $request['json_data'] = $request['data'];
+
+        return \MercadoPago\MercadoPagoSdk::restClient()->put($request['uri'], $request);
     }
 
-    public static function delete($uri, $content_type = "application/json", $extra_params = array()) {
-        return self::exec("DELETE", $uri, null, $content_type, $extra_params);
+    public static function delete($request) {
+        $request['url_query'] = $request['params'];
+        $request['json_data'] = $request['data'];
+
+        return \MercadoPago\MercadoPagoSdk::restClient()->delete($request['uri'], $request);
     }
 }

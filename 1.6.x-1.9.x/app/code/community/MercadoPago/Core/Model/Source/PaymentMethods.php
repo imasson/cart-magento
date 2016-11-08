@@ -43,15 +43,19 @@ class MercadoPago_Core_Model_Source_PaymentMethods
 
         $helper->log('Get payment methods by country... ', 'mercadopago.log');
         $helper->log('API payment methods: ' . '/v1/payment_methods?access_token=' . $accessToken, 'mercadopago.log');
-        $response = MercadoPago_Lib_RestClient::get('/sites/'. strtoupper($website->getConfig('payment/mercadopago/country')) .'/payment_methods?marketplace=NONE');
+        $url = '/sites/'. strtoupper($website->getConfig('payment/mercadopago/country')) .'/payment_methods?marketplace=NONE';
+        //$response = MercadoPago_Lib_RestClient::get(['uri' => $url]);
 
+        \MercadoPago\MercadoPagoSdk::initialize();
+        $response = \MercadoPago\MercadoPagoSdk::restClient()->get($url);
+        
         $helper->log("API payment methods", 'mercadopago.log', $response);
 
-        if (isset($response['error']) || !isset($response['response'])) {
+        if (isset($response['error']) || !isset($response['body'])) {
             return $methods;
         }
 
-        $response = $response['response'];
+        $response = $response['body'];
 
         foreach ($response as $m) {
             if ($m['id'] != 'account_money') {

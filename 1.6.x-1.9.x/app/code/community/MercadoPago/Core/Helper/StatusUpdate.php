@@ -32,7 +32,7 @@ class MercadoPago_Core_Helper_StatusUpdate
             $currentStatus = $this->_getMulticardLastValue($currentStatus);
             $currentStatusDetail = $this->_getMulticardLastValue($currentStatusDetail);
         }
-        if ($status == $currentStatus && $statusDetail == $currentStatusDetail) {
+        if ($status == $currentStatus && $statusDetail == $currentStatusDetail && $order->getStatus() != Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
             $this->_statusUpdatedFlag = true;
         }
     }
@@ -134,7 +134,7 @@ class MercadoPago_Core_Helper_StatusUpdate
         $status = $this->getStatus($payment);
         
         $message = $this->getMessage($status, $payment);
-        if ($this->isStatusUpdated() && !($payment['amount_refunded'] > 0)) {
+        if ($this->isStatusUpdated() && empty($payment['amount_refunded'])) {
             return ['body' => $message, 'code' => MercadoPago_Core_Helper_Response::HTTP_OK];
         }
 
