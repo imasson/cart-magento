@@ -194,17 +194,17 @@
     },
     {
         "name": "doctrine/cache",
-        "version": "v1.6.0",
-        "version_normalized": "1.6.0.0",
+        "version": "v1.6.1",
+        "version_normalized": "1.6.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/doctrine/cache.git",
-            "reference": "f8af318d14bdb0eff0336795b428b547bd39ccb6"
+            "reference": "b6f544a20f4807e81f7044d31e679ccbb1866dc3"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/cache/zipball/f8af318d14bdb0eff0336795b428b547bd39ccb6",
-            "reference": "f8af318d14bdb0eff0336795b428b547bd39ccb6",
+            "url": "https://api.github.com/repos/doctrine/cache/zipball/b6f544a20f4807e81f7044d31e679ccbb1866dc3",
+            "reference": "b6f544a20f4807e81f7044d31e679ccbb1866dc3",
             "shasum": ""
         },
         "require": {
@@ -218,7 +218,7 @@
             "predis/predis": "~1.0",
             "satooshi/php-coveralls": "~0.6"
         },
-        "time": "2015-12-31 16:37:02",
+        "time": "2016-10-29 11:16:17",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -266,38 +266,38 @@
     },
     {
         "name": "doctrine/annotations",
-        "version": "v1.2.7",
-        "version_normalized": "1.2.7.0",
+        "version": "v1.3.0",
+        "version_normalized": "1.3.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/doctrine/annotations.git",
-            "reference": "f25c8aab83e0c3e976fd7d19875f198ccf2f7535"
+            "reference": "30e07cf03edc3cd3ef579d0dd4dd8c58250799a5"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/annotations/zipball/f25c8aab83e0c3e976fd7d19875f198ccf2f7535",
-            "reference": "f25c8aab83e0c3e976fd7d19875f198ccf2f7535",
+            "url": "https://api.github.com/repos/doctrine/annotations/zipball/30e07cf03edc3cd3ef579d0dd4dd8c58250799a5",
+            "reference": "30e07cf03edc3cd3ef579d0dd4dd8c58250799a5",
             "shasum": ""
         },
         "require": {
             "doctrine/lexer": "1.*",
-            "php": ">=5.3.2"
+            "php": "^5.6 || ^7.0"
         },
         "require-dev": {
             "doctrine/cache": "1.*",
-            "phpunit/phpunit": "4.*"
+            "phpunit/phpunit": "^5.6.1"
         },
-        "time": "2015-08-31 12:32:49",
+        "time": "2016-10-24 11:45:47",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.3.x-dev"
+                "dev-master": "1.4.x-dev"
             }
         },
         "installation-source": "dist",
         "autoload": {
-            "psr-0": {
-                "Doctrine\\Common\\Annotations\\": "lib/"
+            "psr-4": {
+                "Doctrine\\Common\\Annotations\\": "lib/Doctrine/Common/Annotations"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -411,17 +411,17 @@
     },
     {
         "name": "mercadopago/px-php",
-        "version": "dev-feature-compatibility",
-        "version_normalized": "dev-feature-compatibility",
+        "version": "dev-feature-compatibility-bis",
+        "version_normalized": "dev-feature-compatibility-bis",
         "source": {
             "type": "git",
             "url": "https://github.com/imasson/px-php.git",
-            "reference": "2dfadd7309ab019d92e0bd50469420497d770a51"
+            "reference": "d0226d90bba74bee7d90eced4597dca77be928cc"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/imasson/px-php/zipball/2dfadd7309ab019d92e0bd50469420497d770a51",
-            "reference": "2dfadd7309ab019d92e0bd50469420497d770a51",
+            "url": "https://api.github.com/repos/imasson/px-php/zipball/d0226d90bba74bee7d90eced4597dca77be928cc",
+            "reference": "d0226d90bba74bee7d90eced4597dca77be928cc",
             "shasum": ""
         },
         "require": {
@@ -437,13 +437,10 @@
             "squizlabs/php_codesniffer": "2.3.*",
             "symfony/yaml": "~2.5"
         },
-        "time": "2016-09-30 20:01:55",
+        "time": "2016-11-08 18:09:09",
         "type": "library",
         "installation-source": "source",
         "autoload": {
-            "files": [
-                "mercadopago.php"
-            ],
             "psr-4": {
                 "MercadoPago\\": [
                     "src/MercadoPago/",
@@ -466,7 +463,7 @@
         ],
         "homepage": "https://github.com/mercadopago/px-php",
         "support": {
-            "source": "https://github.com/imasson/px-php/tree/1.0.0"
+            "source": "https://github.com/imasson/px-php/tree/feature-compatibility-bis"
         }
     }
 ]

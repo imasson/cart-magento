@@ -8,5 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'MercadoPago\\' => array($vendorDir . '/mercadopago/px-php/src/MercadoPago', $vendorDir . '/mercadopago/px-php/tests', $vendorDir . '/mercadopago/px-php/src/MercadoPago/Entities/Flavor1', $vendorDir . '/mercadopago/px-php/src/MercadoPago/Entities/Flavor3', $vendorDir . '/mercadopago/px-php/src/MercadoPago/Entities/Shared'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib/Doctrine/Common/Cache'),
+    'Doctrine\\Common\\Annotations\\' => array($vendorDir . '/doctrine/annotations/lib/Doctrine/Common/Annotations'),
     'Doctrine\\Common\\' => array($vendorDir . '/doctrine/common/lib/Doctrine/Common'),
 );

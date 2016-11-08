@@ -3,7 +3,7 @@
   "type": "project",
   "version": "2.1.1",
   "require": {
-    "mercadopago/px-php" : "dev-feature-compatibility"
+    "mercadopago/px-php" : "dev-feature-compatibility-bis"
   },
   "repositories": [
     {
