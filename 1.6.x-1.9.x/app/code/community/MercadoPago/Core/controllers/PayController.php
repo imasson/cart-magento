@@ -21,21 +21,21 @@ class MercadoPago_Core_PayController
     {
         $standard = Mage::getModel('mercadopago/standard_payment');
 
-        //chama model para fazer o post do pagamento e obter as informacoes para mostrar o checkout
-        $array_assign = $standard->postPago();
+        //make payment request
+        $arrayAssign = $standard->postPago();
 
         $this->loadLayout();
 
         $block = Mage::app()->getLayout()->createBlock('mercadopago/standard_pay');
 
-        //envia as informações para view
-        $block->assign($array_assign);
+        //assign data to block
+        $block->assign($arrayAssign);
 
-        //insere o block
+        //add block to content
         $this->getLayout()->getBlock('content')->append($block);
         $this->_initLayoutMessages('core/session');
 
-        //adiciona uma clean page
+        //set clean page
         $root = $this->getLayout()->getBlock('root');
         $root->setTemplate("mercadopago/clean.phtml");
 

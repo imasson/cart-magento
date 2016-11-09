@@ -1,0 +1,14 @@
+{
+  "name": "mercadopago/px-php-magento",
+  "type": "project",
+  "version": "2.1.1",
+  "require": {
+    "mercadopago/px-php" : "dev-feature-compatibility-bis"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/imasson/px-php"
+    }
+  ]
+}

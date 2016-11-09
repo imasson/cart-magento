@@ -118,60 +118,6 @@ class MercadoPago_Core_Model_Core
         return $infoPayments;
     }
 
-    protected function validStatusTwoPayments($status)
-    {
-        $arrayStatus = explode(" | ", $status);
-        $statusVerif = true;
-        $statusFinal = "";
-        foreach ($arrayStatus as $status):
-
-            if ($statusFinal == "") {
-                $statusFinal = $status;
-            } else {
-                if ($statusFinal != $status) {
-                    $statusVerif = false;
-                }
-            }
-        endforeach;
-
-        if ($statusVerif === false) {
-            $statusFinal = "other";
-        }
-
-        return $statusFinal;
-    }
-
-    public function getMessageByStatus($status, $statusDetail, $paymentMethod, $installment, $amount)
-    {
-        $status = $this->validStatusTwoPayments($status);
-        $statusDetail = $this->validStatusTwoPayments($statusDetail);
-
-        $message = [
-            "title"   => "",
-            "message" => ""
-        ];
-
-        $rawMessage = Mage::helper('mercadopago/statusMessage')->getMessage($status);
-        $message['title'] = Mage::helper('mercadopago')->__($rawMessage['title']);
-
-        if ($status == 'rejected') {
-            if ($statusDetail == 'cc_rejected_invalid_installments') {
-                $message['message'] = Mage::helper('mercadopago')
-                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod), $installment);
-            } elseif ($statusDetail == 'cc_rejected_call_for_authorize') {
-                $message['message'] = Mage::helper('mercadopago')
-                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod), $amount);
-            } else {
-                $message['message'] = Mage::helper('mercadopago')
-                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod));
-            }
-        } else {
-            $message['message'] = Mage::helper('mercadopago')->__($rawMessage['message']);
-        }
-
-        return $message;
-    }
-
     protected function getCustomerInfo($customer, $order)
     {
         $email = htmlentities($customer->getEmail());
@@ -323,24 +269,26 @@ class MercadoPago_Core_Model_Core
 
     public function postPaymentV1($preference)
     {
-
         if (!$this->_accessToken) {
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
         Mage::helper('mercadopago')->log("Access Token for Post", self::LOG_FILE, $this->_accessToken);
 
         //set sdk php mercadopago
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
-        $response = $mp->post("/v1/payments", $preference);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
+        
+        $preference = new \MercadoPago\Payment($preference);
+        $response = $preference->save();
+        
         Mage::helper('mercadopago')->log("POST /v1/payments", self::LOG_FILE, $response);
 
-        if ($response['status'] == 200 || $response['status'] == 201) {
-            return $response;
+        if ($response['code'] == 200 || $response['code'] == 201) {
+            return $preference;
         } else {
             $e = "";
             $exception = new MercadoPago_Core_Model_Api_V1_Exception();
-            if (count($response['response']['cause']) > 0) {
-                foreach ($response['response']['cause'] as $error) {
+            if (count($response['body']['cause']) > 0) {
+                foreach ($response['body']['cause'] as $error) {
                     $e .= $exception->getUserMessage($error) . " ";
                 }
             } else {
@@ -355,36 +303,38 @@ class MercadoPago_Core_Model_Core
         }
     }
 
-    public function getPayment($payment_id)
+    public function getPayment($paymentId)
     {
         if (!$this->_clientId || !$this->_clientSecret) {
             $this->_clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $this->_clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_clientId, $this->_clientSecret);
-
-        return $mp->get_payment($payment_id);
+        Mage::helper('mercadopago')->initApiInstance($this->_clientId, $this->_clientSecret);
+        $payment = new \MercadoPago\Payment();
+        $payment->id = $paymentId;
+        return $payment->read();
     }
 
-    public function getPaymentV1($payment_id)
+    public function getPaymentV1($paymentId)
     {
         if (!$this->_accessToken) {
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
-        return $mp->get("/v1/payments/" . $payment_id);
+        return  \MercadoPago\MercadoPagoSdk::restClient()->get("/v1/payments/" . $paymentId, ['url_query' => ['access_token' => $this->_accessToken]]);
     }
 
-    public function getMerchantOrder($merchant_order_id)
+    public function getMerchantOrder($merchantOrderId)
     {
         if (!$this->_clientId || !$this->_clientSecret) {
             $this->_clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $this->_clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_clientId, $this->_clientSecret);
+        Mage::helper('mercadopago')->initApiInstance($this->_clientId, $this->_clientSecret);
 
-        return $mp->get("/merchant_orders/" . $merchant_order_id);
+        $at = \MercadoPago\MercadoPagoSdk::config()->get('ACCESS_TOKEN');
+        return \MercadoPago\MercadoPagoSdk::restClient()->get("/merchant_orders/" . $merchantOrderId, ['url_query' => ['access_token' => $at]]);
     }
 
     public function getPaymentMethods()
@@ -393,11 +343,11 @@ class MercadoPago_Core_Model_Core
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
-        $payment_methods = $mp->get("/v1/payment_methods");
-
-        return $payment_methods;
+        $paymentMethods = new \MercadoPago\PaymentMethod();
+        $paymentMethods = $paymentMethods->loadAll();
+        return $paymentMethods;
     }
 
     public function getEmailCustomer()
@@ -429,91 +379,23 @@ class MercadoPago_Core_Model_Core
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
-        $params = array(
-            "transaction_amount" => $this->getAmount(),
-            "payer_email"        => $this->getEmailCustomer(),
-            "coupon_code"        => $id
-        );
+        $params = [
+            'transaction_amount' => $this->getAmount(),
+            'payer_email'        => $this->getEmailCustomer(),
+            'coupon_code'        => $id,
+            'access_token' => $this->_accessToken
+        ];
 
-        $details_discount = $mp->get("/discount_campaigns", $params);
+        $detailsDiscount = \MercadoPago\MercadoPagoSdk::restClient()->get('/discount_campaigns', ['url_query' => $params]);
 
         //add value on return api discount
-        $details_discount['response']['transaction_amount'] = $params['transaction_amount'];
-        $details_discount['response']['params'] = $params;
+        $detailsDiscount['body']['transaction_amount'] = $params['transaction_amount'];
+        $detailsDiscount['body']['params'] = $params;
 
 
-        return $details_discount;
-    }
-
-    public function updateOrder($order = null, $data)
-    {
-        $helper = Mage::helper('mercadopago');
-        $statusHelper = Mage::helper('mercadopago/statusUpdate');
-        $helper->log('Update Order', 'mercadopago-notification.log');
-
-        if (!isset($data['external_reference'])) {
-            return;
-        }
-
-        if (!$order) {
-            $order = Mage::getModel('sales/order')->loadByIncrementId($data['external_reference']);
-        }
-        $paymentOrder = $order->getPayment();
-        $this->_saveTransaction($data, $paymentOrder);
-
-        if ($statusHelper->isStatusUpdated()) {
-            return;
-        }
-        try {
-            $additionalFields = [
-                'status',
-                'status_detail',
-                'payment_id',
-                'transaction_amount',
-                'cardholderName',
-                'installments',
-                'statement_descriptor',
-                'trunc_card',
-                'id'
-            ];
-
-            foreach ($additionalFields as $field) {
-                if (isset($data[$field])) {
-                    $paymentOrder->setAdditionalInformation($field, $data[$field]);
-                }
-            }
-
-            if (isset($data['payment_method_id'])) {
-                $paymentOrder->setAdditionalInformation('payment_method', $data['payment_method_id']);
-            }
-
-            $paymentStatus = $paymentOrder->save();
-            $helper->log('Update Payment', 'mercadopago.log', $paymentStatus->getData());
-
-            $statusSave = $order->save();
-            $helper->log('Update order', 'mercadopago.log', $statusSave->getData());
-        } catch (Exception $e) {
-            $helper->log('Error in update order status: ' . $e, 'mercadopago.log');
-            $this->getResponse()->setBody($e);
-
-            $this->getResponse()->setHttpResponseCode(MercadoPago_Core_Helper_Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    protected function _saveTransaction($data, $paymentOrder)
-    {
-        try {
-            $paymentOrder->setTransactionId($data['id']);
-            $paymentOrder->setParentTransactionId($paymentOrder->getTransactionId());
-            $transaction = $paymentOrder->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_PAYMENT, null, true, "");
-            $transaction->setAdditionalInformation('raw_details_info', $data);
-            $transaction->setIsClosed(true);
-            $transaction->save();
-        } catch (Exception $e) {
-            Mage::helper('mercadopago')->log('error in update order status: ' . $e, 'mercadopago.log');
-        }
+        return $detailsDiscount;
     }
 
 }

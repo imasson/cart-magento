@@ -102,6 +102,16 @@
                     </observer>
                 </observers>
             </sales_order_creditmemo_save_after>
+
+            <controller_front_init_before>
+                <observers>
+                    <observer>
+                        <type>object</type>
+                        <class>MercadoPago_Core_Model_CustomAutoload</class>
+                        <method>createAndRegister</method>
+                    </observer>
+                </observers>
+            </controller_front_init_before>
         </events>
         <sales>
             <quote>

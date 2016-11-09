@@ -39,24 +39,24 @@ class MercadoPago_Core_Model_Standard_Payment
     public function postPago()
     {
         //get mercadopago api instance
-        $client_id = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
-        $client_secret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
-        $mp = Mage::helper('mercadopago')->getApiInstance($client_id, $client_secret);
+        $clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
+        $clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
+        Mage::helper('mercadopago')->initApiInstance($clientId, $clientSecret);
 
         //create preference
         $pref = $this->makePreference();
+        $preference = new \MercadoPago\Preference($pref);
+        $response = $preference->save();
         Mage::helper('mercadopago')->log("make array", self::LOG_FILE, $pref);
 
         //make payment request
-        $response = $mp->create_preference($pref);
         Mage::helper('mercadopago')->log("create preference result", self::LOG_FILE, $response);
 
-        if ($response['status'] == 200 || $response['status'] == 201) {
-            $payment = $response['response'];
+        if ($response['code'] == 200 || $response['code'] == 201) {
             if (Mage::getStoreConfigFlag('payment/mercadopago_standard/sandbox_mode')) {
-                $init_point = $payment['sandbox_init_point'];
+                $init_point = $preference->sandbox_init_point;
             } else {
-                $init_point = $payment['init_point'];
+                $init_point = $preference->init_point;
             }
 
             $arrayAssign = [

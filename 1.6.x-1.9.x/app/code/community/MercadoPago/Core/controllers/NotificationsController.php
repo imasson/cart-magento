@@ -72,7 +72,7 @@ class MercadoPago_Core_NotificationsController
         }
 
         $this->_helper->log('Update Order', self::LOG_FILE);
-        $this->_core->updateOrder($this->_order, $this->_paymentData);
+        $this->_updateOrder($this->_order, $this->_paymentData);
         $this->_dispatchBeforeSetEvent();
 
         if ($this->_statusFinal != false) {
@@ -102,7 +102,7 @@ class MercadoPago_Core_NotificationsController
             $this->_helper->log('Return payment', self::LOG_FILE, $response);
 
             if ($this->_isValidResponse($response)) {
-                $payment = $response['response'];
+                $payment = $response['body'];
 
                 $payment = $this->_helper->setPayerInfo($payment);
                 $this->_order = Mage::getModel('sales/order')->loadByIncrementId($payment['external_reference']);
@@ -111,7 +111,7 @@ class MercadoPago_Core_NotificationsController
                 }
                 $this->_helper->log('Update Order', self::LOG_FILE);
                 $this->_statusHelper->setStatusUpdated($payment, $this->_order);
-                $this->_core->updateOrder($this->_order, $payment);
+                $this->_updateOrder($this->_order, $payment);
                 $setStatusResponse = $this->_statusHelper->setStatusOrder($payment);
                 $this->_setResponse($setStatusResponse['body'], $setStatusResponse['code']);
                 $this->_helper->log('Http code', self::LOG_FILE, $this->getResponse()->getHttpResponseCode());
@@ -159,7 +159,7 @@ class MercadoPago_Core_NotificationsController
         if (!$this->_isValidResponse($response)) {
             return [];
         }
-        $payment = $response['response']['collection'];
+        $payment = $response['body']['collection'];
 
         return $this->formatArrayPayment($data, $payment);
     }
@@ -181,7 +181,7 @@ class MercadoPago_Core_NotificationsController
 
     protected function _isValidMerchantOrder($merchantOrder)
     {
-        $this->_merchantOrder = $merchantOrder['response'];
+        $this->_merchantOrder = $merchantOrder['body'];
         if ($this->_isValidResponse($merchantOrder) && count($this->_merchantOrder['payments']) > 0) {
             $this->_responseLog();
 
@@ -193,7 +193,7 @@ class MercadoPago_Core_NotificationsController
 
     protected function _isValidResponse($response)
     {
-        return ($response['status'] == 200 || $response['status'] == 201);
+        return ($response['code'] == 200 || $response['code'] == 201);
     }
 
     protected function _emptyParams($p1, $p2)
@@ -302,6 +302,75 @@ class MercadoPago_Core_NotificationsController
         $data['payer_email'] = $payment['payer']['email'];
 
         return $data;
+    }
+
+    protected function _updateOrder($order, $data)
+    {
+        $helper = Mage::helper('mercadopago');
+        $statusHelper = Mage::helper('mercadopago/statusUpdate');
+        $helper->log('Update Order', 'mercadopago-notification.log');
+
+        if (!isset($data['external_reference'])) {
+            return;
+        }
+
+        if (!$order) {
+            $order = Mage::getModel('sales/order')->loadByIncrementId($data['external_reference']);
+        }
+        $paymentOrder = $order->getPayment();
+        $this->_saveTransaction($data, $paymentOrder);
+
+        if ($statusHelper->isStatusUpdated()) {
+            return;
+        }
+        try {
+            $additionalFields = [
+                'status',
+                'status_detail',
+                'payment_id',
+                'transaction_amount',
+                'cardholderName',
+                'installments',
+                'statement_descriptor',
+                'trunc_card',
+                'id'
+            ];
+
+            foreach ($additionalFields as $field) {
+                if (isset($data[$field])) {
+                    $paymentOrder->setAdditionalInformation($field, $data[$field]);
+                }
+            }
+
+            if (isset($data['payment_method_id'])) {
+                $paymentOrder->setAdditionalInformation('payment_method', $data['payment_method_id']);
+            }
+
+            $paymentStatus = $paymentOrder->save();
+            $helper->log('Update Payment', 'mercadopago.log', $paymentStatus->getData());
+
+            $statusSave = $order->save();
+            $helper->log('Update order', 'mercadopago.log', $statusSave->getData());
+        } catch (Exception $e) {
+            $helper->log('Error in update order status: ' . $e, 'mercadopago.log');
+            $this->getResponse()->setBody($e);
+
+            $this->getResponse()->setHttpResponseCode(MercadoPago_Core_Helper_Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    protected function _saveTransaction($data, $paymentOrder)
+    {
+        try {
+            $paymentOrder->setTransactionId($data['id']);
+            $paymentOrder->setParentTransactionId($paymentOrder->getTransactionId());
+            $transaction = $paymentOrder->addTransaction(Mage_Sales_Model_Order_Payment_Transaction::TYPE_PAYMENT, null, true, "");
+            $transaction->setAdditionalInformation('raw_details_info', $data);
+            $transaction->setIsClosed(true);
+            $transaction->save();
+        } catch (Exception $e) {
+            Mage::helper('mercadopago')->log('error in update order status: ' . $e, 'mercadopago.log');
+        }
     }
 
 }

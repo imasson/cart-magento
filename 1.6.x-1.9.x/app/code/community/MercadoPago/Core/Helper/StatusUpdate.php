@@ -32,7 +32,7 @@ class MercadoPago_Core_Helper_StatusUpdate
             $currentStatus = $this->_getMulticardLastValue($currentStatus);
             $currentStatusDetail = $this->_getMulticardLastValue($currentStatusDetail);
         }
-        if ($status == $currentStatus && $statusDetail == $currentStatusDetail) {
+        if ($status == $currentStatus && $statusDetail == $currentStatusDetail && $order->getStatus() != Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
             $this->_statusUpdatedFlag = true;
         }
     }

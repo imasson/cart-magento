@@ -56,8 +56,58 @@ class MercadoPago_Core_Block_AbstractSuccess
         return $info_payments;
     }
 
-    public function getMessageByStatus($status, $status_detail, $payment_method, $amount, $installment)
+    public function getMessageByStatus($status, $statusDetail, $paymentMethod, $installment, $amount)
     {
-        return Mage::getModel('mercadopago/core')->getMessageByStatus($status, $status_detail, $payment_method, $amount, $installment);
+        $status = $this->_validStatusTwoPayments($status);
+        $statusDetail = $this->_validStatusTwoPayments($statusDetail);
+
+        $message = [
+            "title"   => "",
+            "message" => ""
+        ];
+
+        $rawMessage = Mage::helper('mercadopago/statusMessage')->getMessage($status);
+        $message['title'] = Mage::helper('mercadopago')->__($rawMessage['title']);
+
+        if ($status == 'rejected') {
+            if ($statusDetail == 'cc_rejected_invalid_installments') {
+                $message['message'] = Mage::helper('mercadopago')
+                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod), $installment);
+            } elseif ($statusDetail == 'cc_rejected_call_for_authorize') {
+                $message['message'] = Mage::helper('mercadopago')
+                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod), $amount);
+            } else {
+                $message['message'] = Mage::helper('mercadopago')
+                    ->__(Mage::helper('mercadopago/statusDetailMessage')->getMessage($statusDetail), strtoupper($paymentMethod));
+            }
+        } else {
+            $message['message'] = Mage::helper('mercadopago')->__($rawMessage['message']);
+        }
+
+        return $message;
     }
+
+    protected function _validStatusTwoPayments($status)
+    {
+        $arrayStatus = explode(" | ", $status);
+        $statusVerif = true;
+        $statusFinal = "";
+        foreach ($arrayStatus as $status):
+
+            if ($statusFinal == "") {
+                $statusFinal = $status;
+            } else {
+                if ($statusFinal != $status) {
+                    $statusVerif = false;
+                }
+            }
+        endforeach;
+
+        if ($statusVerif === false) {
+            $statusFinal = "other";
+        }
+
+        return $statusFinal;
+    }
+
 }
