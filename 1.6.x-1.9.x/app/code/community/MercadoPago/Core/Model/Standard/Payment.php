@@ -50,11 +50,9 @@ class MercadoPago_Core_Model_Standard_Payment
         Mage::helper('mercadopago')->log("make array", self::LOG_FILE, $pref);
 
         //make payment request
-        //$response = $mp->create_preference($pref);
         Mage::helper('mercadopago')->log("create preference result", self::LOG_FILE, $response);
 
         if ($response['code'] == 200 || $response['code'] == 201) {
-            //$payment = $response['response'];
             if (Mage::getStoreConfigFlag('payment/mercadopago_standard/sandbox_mode')) {
                 $init_point = $preference->sandbox_init_point;
             } else {

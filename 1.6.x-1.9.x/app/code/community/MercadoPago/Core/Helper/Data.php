@@ -97,7 +97,6 @@ class MercadoPago_Core_Helper_Data
     {
         $this->initApiInstance();
         $response = \MercadoPago\MercadoPagoSdk::restClient()->get("/v1/payment_methods", ['url_query' => ['access_token' => $accessToken]]);
-        //$response = $mp->get("/v1/payment_methods");
         if ($response['code'] == 401 || $response['code'] == 400) {
             return false;
         }

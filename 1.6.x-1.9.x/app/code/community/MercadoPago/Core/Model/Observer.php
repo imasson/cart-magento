@@ -212,7 +212,6 @@ class MercadoPago_Core_Model_Observer
             $response = null;
 
             $accessToken = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
-            //$response = MercadoPago_Lib_RestClient::put("/collections/" . $id . "?access_token=" . $accessToken, $cancel_status);
             $params = [
                 'json_data'  => ['status' => 'cancelled'],
                 'url_params' => ['access_token' => $accessToken],
@@ -221,7 +220,6 @@ class MercadoPago_Core_Model_Observer
 
             if ($paymentMethod == 'mercadopago_standard') {
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->put($params);
-                //$response = $mp->cancel_payment($paymentID);
             } else {
                 $params['uri'] = '/v1/payments/' . $paymentID;
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->put($params);
@@ -320,6 +318,12 @@ class MercadoPago_Core_Model_Observer
     {
         $creditMemo = $observer->getData('creditmemo');
         $order = $creditMemo->getOrder();
+        $paymentMethod = $order->getPayment()->getMethodInstance()->getCode();
+        if (!($paymentMethod == 'mercadopago_standard' || $paymentMethod == 'mercadopago_custom')) {
+
+            return;
+        }
+
         if ($order->getExternalRequest()) {
             return; // si la peticion de crear un credit memo viene de mercado pago, no hace falta mandar el request nuevamente
         }
@@ -328,7 +332,7 @@ class MercadoPago_Core_Model_Observer
         $orderPaymentStatus = $order->getPayment()->getData('additional_information')['status'];
         $payment = $order->getPayment();
         $paymentID = $order->getPayment()->getData('additional_information')['id'];
-        $paymentMethod = $order->getPayment()->getMethodInstance()->getCode();
+
         $orderStatusHistory = $order->getAllStatusHistory();
         $isCreditCardPayment = ($order->getPayment()->getData('additional_information')['installments'] != null ? true : false);
 
@@ -439,7 +443,6 @@ class MercadoPago_Core_Model_Observer
         if ($paymentMethod == 'mercadopago_standard') {
             if ($isTotalRefund) {
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->put($params);
-                //$response = $mp->refund_payment($paymentID);
                 $order->setMercadoPagoRefundType('total');
             } else {
                 $order->setMercadoPagoRefundType('partial');
@@ -453,19 +456,16 @@ class MercadoPago_Core_Model_Observer
                 ];
                 $params['uri'] = "/collections/$paymentID/refunds";
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->post($params);
-                //$response = $mp->post("/collections/$paymentID/refunds?access_token=$accessToken", $params);
             }
         } else {
             $params['uri'] = "/v1/payments/$paymentID/refunds";
             if ($isTotalRefund) {
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->post($params);
-                //$response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken");
             } else {
                 $params['json_data'] = [
                     'amount' => $amount,
                 ];
                 $response = \MercadoPago\MercadoPagoSdk::restClient()->post($params);
-                //$response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken", $params);
             }
         }
 
@@ -499,6 +499,12 @@ class MercadoPago_Core_Model_Observer
         $status = Mage::getStoreConfig('payment/mercadopago/order_status_refunded');
 
         $order = $creditMemo->getOrder();
+        $paymentMethod = $order->getPayment()->getMethodInstance()->getCode();
+        if (!($paymentMethod == 'mercadopago_standard' || $paymentMethod == 'mercadopago_custom')) {
+
+            return;
+        }
+
         if ($order->getMercadoPagoRefund() || $order->getExternalRequest()) {
             if ($order->getMercadoPagoRefundType() == 'partial' || $order->getExternalType() == 'partial') {
                 if ($order->getState() != $status) {

@@ -188,13 +188,11 @@ class MercadoPago_Core_Model_Custom_Payment
         $accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
 
         Mage::helper('mercadopago')->initApiInstance($accessToken);
-        //\MercadoPago\MercadoPagoSdk::initialize();
         
         $customer = new \MercadoPago\Customer();
         $customer->email = $email;
 
         $response = $customer->search();
-        //$customer = $mp->get("/v1/customers/search", ["email" => $email]);
 
         Mage::helper('mercadopago')->log("Response search customer", self::LOG_FILE, $customer);
 
@@ -249,7 +247,6 @@ class MercadoPago_Core_Model_Custom_Payment
         $mpCard = new \MercadoPago\Card($params);
         $mpCard->customer_id = $customer->id;
         $response = $mpCard->save();
-        //$card = $mp->post("/v1/customers/" . $customer->id . "/cards", $params);
 
         Mage::helper('mercadopago')->log("Response create card", self::LOG_FILE, $mpCard->toArray());
 
