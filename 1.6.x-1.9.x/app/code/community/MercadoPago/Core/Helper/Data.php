@@ -84,12 +84,14 @@ class MercadoPago_Core_Helper_Data
         if (empty($params)) {
             return;
         }
-
+        $type = self::TYPE . ' ' . (string)Mage::getConfig()->getModuleConfig("MercadoPago_Core")->version;
         if ($params == 1) {
             $this->_config->set('ACCESS_TOKEN', func_get_arg(0));
+            \MercadoPago\MercadoPagoSdk::setCustomHeader('x-tracking-id', 'platform:' . self::PLATFORM_V1_WHITELABEL . ',type:' . $type . ',so;');
         } else {
             $this->_config->set('CLIENT_ID', func_get_arg(0));
             $this->_config->set('CLIENT_SECRET', func_get_arg(1));
+            \MercadoPago\MercadoPagoSdk::setCustomHeader('x-tracking-id', 'platform:' . self::PLATFORM_DESKTOP . ',type:' . $type . ',so;');
         }
     }
 

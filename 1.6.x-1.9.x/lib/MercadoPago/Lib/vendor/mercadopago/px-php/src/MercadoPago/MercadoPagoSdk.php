@@ -42,7 +42,7 @@ class MercadoPagoSdk
     {
         return self::$_config;
     }
-    
+
     /**
      * @return Config
      */
@@ -50,7 +50,15 @@ class MercadoPagoSdk
     {
         return self::$_restClient;
     }
-    
+
+    /**
+     * @param $key
+     * @param $value
+     */
+    public static function setCustomHeader($key, $value)
+    {
+        self::$_manager->setCustomHeader($key, $value);
+    }
 
 }
 
