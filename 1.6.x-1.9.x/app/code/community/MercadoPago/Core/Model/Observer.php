@@ -347,14 +347,16 @@ class MercadoPago_Core_Model_Observer
         $isTotalRefund = $payment->getAmountPaid() == $payment->getAmountRefunded();
 
         $isValidBasicData = $this->checkRefundBasicData($paymentMethod);
+        $isValidaData = false;
+        if ($isValidBasicData) {
+            $isValidaData = $this->checkRefundData($isCreditCardPayment,
+                $orderStatus,
+                $orderPaymentStatus,
+                $paymentDate,
+                $order);
+        }
 
-        $isValidaData = $this->checkRefundData($isCreditCardPayment,
-            $orderStatus,
-            $orderPaymentStatus,
-            $paymentDate,
-            $order);
-
-        if ($isValidBasicData && $isValidaData) {
+        if ($isValidaData) {
             $this->sendRefundRequest($order, $creditMemo, $paymentMethod, $isTotalRefund, $paymentID);
         }
 
