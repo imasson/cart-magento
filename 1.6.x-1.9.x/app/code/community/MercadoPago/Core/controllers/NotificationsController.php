@@ -90,37 +90,40 @@ class MercadoPago_Core_NotificationsController
 
     public function customAction()
     {
-        $request = $this->getRequest();
+        $this->_requestData = $this->getRequest()->getParams();
+
         $this->_helper = Mage::helper('mercadopago');
         $this->_core = Mage::getModel('mercadopago/core');
         $this->_statusHelper = Mage::helper('mercadopago/statusUpdate');
-        $this->_helper->log('Custom Received notification', self::LOG_FILE, $request->getParams());
-        $dataId = $request->getParam('data_id');
-        $type = $request->getParam('type');
-        if (!empty($dataId) && $type == 'payment') {
-            $response = $this->_core->getPaymentV1($dataId);
-            $this->_helper->log('Return payment', self::LOG_FILE, $response);
+        $this->_helper->log('Custom Received notification', self::LOG_FILE, $this->_getRequestData());
+        $type = $this->_getRequestData('type');
+        if ($this->_emptyParams($this->_getRequestData('data_id'), $type) && $type == 'payment') {
 
-            if ($this->_isValidResponse($response)) {
-                $payment = $response['response'];
-
-                $payment = $this->_helper->setPayerInfo($payment);
-                $this->_order = Mage::getModel('sales/order')->loadByIncrementId($payment['external_reference']);
-                if (!$this->_orderExists()) {
-                    return;
-                }
-                $this->_helper->log('Update Order', self::LOG_FILE);
-                $this->_statusHelper->setStatusUpdated($payment, $this->_order);
-                $this->_core->updateOrder($this->_order, $payment);
-                $setStatusResponse = $this->_statusHelper->setStatusOrder($payment);
-                $this->_setResponse($setStatusResponse['body'], $setStatusResponse['code']);
-                $this->_helper->log('Http code', self::LOG_FILE, $this->getResponse()->getHttpResponseCode());
-
-                return;
-            }
+            return;
         }
 
-        $this->_helper->log('Payment not found', self::LOG_FILE, $request->getParams());
+        $response = $this->_core->getPaymentV1($this->_getRequestData('data_id'));
+        $this->_helper->log('Return payment', self::LOG_FILE, $response);
+
+        if ($this->_isValidResponse($response)) {
+            $payment = $response['response'];
+
+            $payment = $this->_helper->setPayerInfo($payment);
+            $this->_order = Mage::getModel('sales/order')->loadByIncrementId($payment['external_reference']);
+            if (!$this->_orderExists()) {
+                return;
+            }
+
+            $this->_helper->log('Update Order', self::LOG_FILE);
+            $this->_statusHelper->setStatusUpdated($payment, $this->_order, true);
+            $this->_core->updateOrder($this->_order, $payment);
+            $setStatusResponse = $this->_statusHelper->setStatusOrder($payment);
+            $this->_setResponse($setStatusResponse['body'], $setStatusResponse['code']);
+            $this->_helper->log('Http code', self::LOG_FILE, $this->getResponse()->getHttpResponseCode());
+
+            return;
+        }
+        $this->_helper->log('Payment not found', self::LOG_FILE, $this->_getRequestData());
         $this->_setResponse('Payment not found', MercadoPago_Core_Helper_Response::HTTP_NOT_FOUND);
         $this->_helper->log('Http code', self::LOG_FILE, $this->getResponse()->getHttpResponseCode());
     }
