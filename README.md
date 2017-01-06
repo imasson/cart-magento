@@ -1,69 +1,118 @@
-# Magento - Mercadopago Module (1.4.x to 1.9.x)
----
+# Magento - MercadoPago Module (v1.4.x to 1.9.x)
 
-*Checkout Custom Available for Argentina, Brazil and Mexico*
+* [Features](#features)
+* [Requirements](#requirements)
+* [Available versions](#available_versions)
+* [Feedback](#feedback)
 
-*Checkout Standard Available for Argentina, Brazil, Colombia, Mexico and Venezuela*
+<a name="features"></a>
+##Features##
 
+Checkout options right for your business: 
+We offer two checkout methods that make it easy to securely accept payments from anyone, anywhere.
 
-## Features:
+**Custom Checkout**
 
-**Credit Card Customized Checkout**
+Offer a checkout fully customized to your brand experience with our simple-to-use payments API.
 
-This feature will allow merchants to have a customized checkout for credit card
-payment. Thus, it will be possible to customize its look and feel, customers won’t be
-redirected away to complete the payment, and it will also reduce the checkout steps
-improving conversion rates.
+* Seamless integration— no coding required, unless you want to.
+* Full control of buying experience.
+* Store buyer’s card for fast checkout.
+* Accept tickets in addition to cards.
+* Accept Mercado Pago's discount coupons.
+* Improve conversion rate.
 
-**Customized Bar Code Payment**
+*Available for Argentina, Brazil, Colombia, Mexico, Peru and Venezuela*
 
-This feature will allow merchants to have a customized bar code payment. It
-reduces the checkout steps improving conversion rates. The bar code payment will
-have merchant's logo.
+**Standard Checkout**
 
-**Standard checkout**
+Great for merchants who want to get going quickly and easily.
 
-This feature will allow merchants to have a standard checkout. It includes all
-payment methods (i.e. all credit cards, bar code payment, account money) and all
-window types (i.e. redirect, iframe, modal, blank and popup). Customization is not allowed.
+* Easy website integration— no coding required.
+* Limited control of buying experience— display Checkout window as redirect, modal or iframe.
+* Store buyer’s card for fast checkout.
+* Accept tickets, bank transfer and account money in addition to cards.
+* Accept Mercado Pago's discount coupons.
 
-<a name="usage"></a>
-## Installation:
+*Available for Argentina, Brazil, Chile, Colombia, Mexico, Peru and Venezuela*
 
-1. Copy the folders **app**, **skin**, **js** and **lib** to the Magento root installation. Make sure to keep the Magento folders structure intact.
-2. In your admin go to **System > Cache Management** and clear all caches.
+**Compatibility with OSC extensions**
 
-	![Installation Instructions](https://raw.github.com/mercadopago/cart-magento/master/README.img/installation.png)<br />
-3. Go to **System>IndexManagement** and select all fields. Then click in **Reindex Data**.
+This feature allows easy integration with two of the most used One Step Checkout extensions in the market:
+* [Inovarti OSC](http://onestepcheckout.com.br)
+* Idecheckoutvm
 
-	![Index Managment](https://raw.github.com/mercadopago/cart-magento/master/README.img/indexmanagment.png)
+**Shipment integration**
 
----
-<a name="Setup"></a>
-## Setup MercadoPago
+This feature allows to setup and integrate with MercadoEnvios shipment method as another shipment option for customers. It includes the possibility to print the shipping label directly from the Magento Admin Panel. Free shipping is also available.
 
-1. Go to **System > Configuration > Sales > Payment Methods**. Select **MercadoPago**.
+*Available for Argentina, Brazil and Mexico only with Standard Checkout*
 
-2. Set your Country to the same where your account was created on, and save config.
+<a name="requirements"></a>
+## Requirements:
 
-	***Note:*** If you change the Country where your account was created you need save config to refresh the excluded payment methods.
+**Operating System**
 
+<ul>
+<li>Linux x86-64</li>
+</ul>
 
-3. Set your **CLIENT_ID** and **CLIENT_SECRET**. Get them in the following address:
+**Web Server**
 
-	* Argentina: [https://www.mercadopago.com/mla/herramientas/aplicaciones](https://www.mercadopago.com/mla/herramientas/aplicaciones)
-	* Brazil: [https://www.mercadopago.com/mlb/ferramentas/aplicacoes](https://www.mercadopago.com/mlb/ferramentas/aplicacoes)
-	* Colombia: [https://www.mercadopago.com/mco/herramientas/aplicaciones](https://www.mercadopago.com/mco/herramientas/aplicaciones)
-	* Mexico: [https://www.mercadopago.com/mlm/herramientas/aplicaciones](https://www.mercadopago.com/mlm/herramientas/aplicaciones)
-	* Venezuela: [https://www.mercadopago.com/mlv/herramientas/aplicaciones](https://www.mercadopago.com/mlv/herramientas/aplicaciones)
+<ul>
+<li>Apache 2.x</li>
+<li>Nginx 1.7.x</li>
+</ul>
 
-4. Get your **public_key** in the following address:
+**Database**
 
-	* Argentina: [https://www.mercadopago.com/mla/account/credentials](https://www.mercadopago.com/mla/account/credentials)
-	* Brazil: [https://www.mercadopago.com/mlb/account/credentials](https://www.mercadopago.com/mlb/account/credentials)
-	* Colombia: [https://www.mercadopago.com/mco/account/credentials](https://www.mercadopago.com/mco/account/credentials)
-	* Mexico: [https://www.mercadopago.com/mlm/account/credentials](https://www.mercadopago.com/mlm/account/credentials)
-	* Venezuela: [https://www.mercadopago.com/mlv/account/credentials](https://www.mercadopago.com/mlv/account/credentials)
+<ul><li>MySQL 5.6 (Oracle or Percona)</li></ul>
 
-![setup 1](https://raw.github.com/mercadopago/cart-magento/master/README.img/setup.png)<br />
-![setup 2](https://raw.github.com/mercadopago/cart-magento/master/README.img/setup2.png)<br />
+**PHP**
+
+<ul>
+<li>PHP 5.4.x</li>
+<li>PHP 5.5.x</li>
+</ul>
+    Required extensions:
+
+    PDO_MySQL, simplexml, mcrypt, hash, GD, DOM, iconv, curl
+
+**SSL certificate**
+
+It is a requirement that you have a SSL certificate, and the payment form to be provided under an HTTPS page.
+During the sandbox mode tests, you can operate over HTTP, but for homologation you'll need to acquire the certificate in case you don't have it.
+
+<a name="available_versions"></a>
+##Available versions##
+<table>
+  <thead>
+    <tr>
+      <th>Plugin Version</th>
+      <th>Status</th>
+      <th>Compatible Versions</th>
+    </tr>
+  <thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/mercadopago/cart-magento/tree/master/1.4.x-1.5.x">v1.4.x - 1.5.x</a></td>
+      <td>Deprecated (Old version)</td>
+      <td>Community Edition 1.4.x - 1.5.x<br />Enterprise Edition 1.9.x - 1.10.x</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/mercadopago/cart-magento/tree/master/1.6.x-1.9.x">v1.6.x - v1.9.x</a></td>
+      <td>Stable (Current version)</td>
+      <td>Community Edition 1.6.x - 1.9.x<br />Enterprise Edition 1.11.x - 1.14.x</td>
+    </tr>
+  </tbody>
+</table>
+
+*Click on the links above for instructions on installing and configuring the module.*
+
+<a name="Feedback"></a>
+## Feedback ##
+
+We want to know your opinion, please answer the following form.
+
+* [Portuguese](http://goo.gl/forms/2n5jWHaQbfEtdy0E2)
+* [Spanish](http://goo.gl/forms/A9bm8WuqTIZ89MI22)
