@@ -5,7 +5,8 @@
  */
 
 #payment_form_mercadopago_custom{
-    margin-top: 25px;
+    margin: 25px 30px 0;
+    position: relative;
 }
 
 #mercadopago_checkout_custom ul li{
@@ -170,27 +171,58 @@
     cursor: pointer;
     width: 160px;
 }
-#return_list_card_mp, #second_card_return_list_card_mp {
-    display: inline-block !important;
+
+#second_card_return_list_card_mp {
+    display: inline-block;
     margin-left: 4px;
 }
-#use_other_card_mp, #show_second_card, #show_second_card, #second_card_use_other_card_mp, #hide_second_card {
+#use_other_card_mp, #second_card_use_other_card_mp, #hide_second_card {
     background: #3399cc;
     color: #fff;
     display: inline-block !important;
     font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif;
     font-size: 13px;
     margin: 1px 0;
+    max-width: 130px;
     padding: 2px 6px;
     text-align: center;
     width: auto;
 }
+
 #use_other_card_mp:hover, #show_second_card:hover, #show_second_card:hover, #second_card_use_other_card_mp:hover {
     text-decoration: none;
 }
 
+#show_second_card{
+    background: #3399cc;
+    color: #fff;
+    font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif;
+    font-size: 13px;
+    margin: 1px 0;
+    max-width: 130px;
+    padding: 2px 6px;
+    text-align: center;
+    width: auto;
+}
+
+#return_list_card_mp {
+    display: none;
+    background: #3399cc;
+    color: #fff;
+    display: none;
+    font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif;
+    font-size: 13px;
+    margin: 1px 0;
+    max-width: 130px;
+    padding: 2px 6px;
+    text-align: center;
+    width: auto;
+}
+
 #show_second_card {
-    margin-bottom: 15px;
+    bottom: -18px;
+    left: 20px;
+    position: absolute;
 }
 
 .second_card_total_buy_price, .total_buy_price {
@@ -211,10 +243,6 @@
 
 #hide_second_card:hover {
     text-decoration: none;
-}
-
-#return_list_card_mp{
-    display: none;
 }
 
 /*
@@ -416,4 +444,16 @@
 
 .show_second_card {
     display: none;
+}
+
+#installments__mp {
+    float: none;
+}
+
+#installments__mp label {
+    margin: 0;
+}
+
+#installments__mp select {
+    margin-left: 100px;
 }

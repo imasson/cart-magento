@@ -74,6 +74,7 @@ class MercadoPago_Core_Model_Custom_Payment
                     $this->getInfoInstance()->setAdditionalInformation('second_payment_status', $paymentSecondCard['status']);
                     $this->getInfoInstance()->setAdditionalInformation('second_payment_status_detail', $paymentSecondCard['status_detail']);
                     $this->getInfoInstance()->setAdditionalInformation('total_paid_amount', $paymentFirstCard['transaction_details']['total_paid_amount'] . '|' . $paymentSecondCard['transaction_details']['total_paid_amount']);
+                    $this->getInfoInstance()->setAdditionalInformation('transaction_amount', $paymentFirstCard['transaction_amount'] . '|' . $paymentSecondCard['transaction_amount']);
                     $stateObject->setState(Mage::helper('mercadopago/statusUpdate')->_getAssignedState('pending_payment'));
                     $stateObject->setStatus('pending_payment');
                     $stateObject->setIsNotified(false);
@@ -85,9 +86,7 @@ class MercadoPago_Core_Model_Custom_Payment
                     $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
                     $id = $paymentFirstCard['id'];
                     $refundResponse = $mp->post("/v1/payments/$id/refunds?access_token=$accessToken");
-                    if ($refundResponse['status'] == 200 || $refundResponse['status'] == 201) {
-
-                    }
+                    Mage::helper('mercadopago')->log("info form", self::LOG_FILE, $refundResponse);
                     return false;
                 }
             } else {
