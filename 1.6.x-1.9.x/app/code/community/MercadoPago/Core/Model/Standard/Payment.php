@@ -161,8 +161,10 @@ class MercadoPago_Core_Model_Standard_Payment
 
         $this->_calculateDiscountAmount($arr['items'], $order);
         $this->_calculateBaseTaxAmount($arr['items'], $order);
+        $this->_calculateBaseGiftCardAmount($arr['items'], $order);
         $totalItem = $this->getTotalItems($arr['items']);
         $totalItem += (float)$order->getBaseShippingAmount();
+
         $orderAmount = (float)$order->getBaseGrandTotal();
         if (!$orderAmount) {
             $orderAmount = (float)$order->getBasePrice() + $order->getBaseShippingAmount();
@@ -189,7 +191,7 @@ class MercadoPago_Core_Model_Standard_Payment
                 "number"    => $shipping['telephone']
             ];
 
-            $arr['shipments'] = $this->_getParamShipment($paramsShipment, $order, $shippingAddress);
+            $arr['shipments'] = $this->_getParamShipment($paramsShipment, $order, $shippingAddress, $arr);
         }
         $billingAddress = $order->getBillingAddress()->getData();
 
@@ -250,13 +252,21 @@ class MercadoPago_Core_Model_Standard_Payment
         ];
     }
 
-    protected function _getParamShipment($params, $order, $shippingAddress) {
+    protected function _getParamShipment($params, $order, $shippingAddress, &$arr)
+    {
         $paramsShipment = $params->getValues();
         if (empty($paramsShipment)) {
             $paramsShipment = $params->getData();
-            $paramsShipment['cost'] = (float)$order->getBaseShippingAmount();
+            $arr['items'][] = [
+                "title"       => "Shipping cost",
+                "description" => "Shipping cost",
+                "category_id" => Mage::getStoreConfig('payment/mercadopago/category_id'),
+                "quantity"    => 1,
+                "unit_price"  => (float)$order->getBaseShippingAmount()
+            ];
         }
         $paramsShipment['receiver_address'] = $this->getReceiverAddress($shippingAddress);
+
         return $paramsShipment;
     }
 
@@ -291,6 +301,19 @@ class MercadoPago_Core_Model_Standard_Payment
                 "category_id" => Mage::getStoreConfig('payment/mercadopago/category_id'),
                 "quantity"    => 1,
                 "unit_price"  => (float)$order->getDiscountAmount()
+            ];
+        }
+    }
+
+    protected function _calculateBaseGiftCardAmount(&$arr, $order)
+    {
+        if ($order->getBaseGiftCardsAmount() > 0) {
+            $arr[] = [
+                "title"       => "Store discount coupon",
+                "description" => "Store discount coupon",
+                "category_id" => Mage::getStoreConfig('payment/mercadopago/category_id'),
+                "quantity"    => 1,
+                "unit_price"  => (float)$order->getBaseGiftCardsAmount() * -1
             ];
         }
     }

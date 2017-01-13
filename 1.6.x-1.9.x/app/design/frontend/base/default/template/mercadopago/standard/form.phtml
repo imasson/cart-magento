@@ -1,14 +1,15 @@
 
 <fieldset class="form-list">
     <!--<link rel="stylesheet" href="<?php echo $this->getSkinUrl('mercadopago/css/style.css'); ?>" /> -->
-    
+
     <?php $_code = $this->getMethodCode(); ?>
     <?php $_country = $this->getMethodCountry(); ?>
 
-    <?php if ($this->getMethod()->getConfigData('communication') != ""): ?>
-        <p class="communication"><?php echo $this->getMethod()->getConfigData('communication') ?></p>
-    <?php endif; ?>    <?php if($this->getMethod()->getConfigData('banner_checkout') != ""): ?>
-        <img src="<?php echo $this->getMethod()->getConfigData('banner_checkout'); ?>"  class="banner_checkout_mp"/>
-    <?php endif;?>
-
+    <ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none;">
+        <?php if ($this->getMethod()->getConfigData('communication') != ""): ?>
+            <p class="communication"><?php echo $this->getMethod()->getConfigData('communication') ?></p>
+        <?php endif; ?>    <?php if($this->getMethod()->getConfigData('banner_checkout') != ""): ?>
+            <img src="<?php echo $this->getMethod()->getConfigData('banner_checkout'); ?>"  class="banner_checkout_mp"/>
+        <?php endif;?>
+    </ul>
 </fieldset>
