@@ -108,7 +108,7 @@ class MercadoPago_Core_Model_Standard_Payment
 
             $items[] = [
                 "id"          => $item->getSku(),
-                "title"       => $product->getName(),
+                "title"       => 'Order ID: ' . $order->getIncrementId(),
                 "description" => $product->getName(),
                 "picture_url" => $image,
                 "category_id" => Mage::getStoreConfig('payment/mercadopago/category_id'),
