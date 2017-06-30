@@ -114,8 +114,8 @@ class MercadoPago_Core_CheckoutController
                 $merchantOrderId = Mage::app()->getRequest()->getParam('merchant_order_id');
                 $response = $this->_core->getMerchantOrder($merchantOrderId);
 
-                if ($response['status'] == 201 || $response['status'] == 200) {
-                    $merchantOrderData = $response['response'];
+                if ($response['code'] == 201 || $response['code'] == 200) {
+                    $merchantOrderData = $response['body'];
                     $paymentData = $this->_statusHelper->getDataPayments($merchantOrderData, self::LOG_FILE);
                     $status = $paymentData['status'];
                 }

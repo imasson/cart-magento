@@ -453,10 +453,10 @@ class MercadoPago_Core_Helper_StatusUpdate
         $core = Mage::getModel('mercadopago/core');
 
         $response = $core->getPayment($paymentId);
-        if ($response['status'] == 400 || $response['status'] == 401) {
+        if ($response['code'] == 400 || $response['code'] == 401) {
             return [];
         }
-        $payment = $response['response']['collection'];
+        $payment = $response['body']['collection'];
 
         return $this->formatArrayPayment($data, $payment, $logFile);
     }

@@ -45,8 +45,8 @@ class MercadoPago_Core_Model_Cron_Order
                 $merchantOrderId =  $infoPayments['merchant_order_id'];
                 $response = Mage::getModel('mercadopago/core')->getMerchantOrder($merchantOrderId);
 
-                if ($response['status'] == 201 || $response['status'] == 200) {
-                    $merchantOrderData = $response['response'];
+                if ($response['code'] == 201 || $response['code'] == 200) {
+                    $merchantOrderData = $response['body'];
 
                     $paymentData = $this->_statusHelper->getDataPayments($merchantOrderData, self::LOG_FILE);
                     $statusFinal = $this->_statusHelper->getStatusFinal($paymentData['status'], $merchantOrderData);
@@ -86,10 +86,10 @@ class MercadoPago_Core_Model_Cron_Order
         $core = Mage::getModel('mercadopago/core');
 
         $response = $core->getPayment($paymentId);
-        if ($response['status'] == 400 || $response['status'] == 401) {
+        if ($response['cody'] == 400 || $response['code'] == 401) {
             return [];
         }
-        $payment = $response['response']['collection'];
+        $payment = $response['body']['collection'];
 
         return $this->_statusHelper->formatArrayPayment($data, $payment, self::LOG_FILE);
     }

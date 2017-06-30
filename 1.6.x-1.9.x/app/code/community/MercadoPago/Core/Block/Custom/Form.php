@@ -35,7 +35,7 @@ class MercadoPago_Core_Block_Custom_Form
         $types = array();
 
         //percorre todos os payments methods
-        foreach ($payment_methods['response'] as $pm) {
+        foreach ($payment_methods['body'] as $pm) {
 
             //filtra por payment_methods
             if (in_array($pm['payment_type_id'], $payment_methods_types)) {

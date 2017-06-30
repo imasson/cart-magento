@@ -136,11 +136,13 @@ class MercadoPago_Core_Model_Observer
         $accessToken = $this->_website->getConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
         Mage::helper('mercadopago')->log("Get access_token: " . $accessToken, self::LOG_FILE);
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
-        $user = $mp->get("/users/me");
+        Mage::helper('mercadopago')->initApiInstance($accessToken);
+        $user = \MercadoPago\Sdk::get("/users/me");
+
+        //$user = $mp->get("/users/me");
         Mage::helper('mercadopago')->log("API Users response", self::LOG_FILE, $user);
 
-        if ($user['status'] == 200 && !in_array("test_user", $user['response']['tags']) && strpos($accessToken, 'TEST') === false) {
+        if ($user['code'] == 200 && !in_array("test_user", $user['body']['tags']) && strpos($accessToken, 'TEST') === false) {
             $sponsors = [
                 'MLA' => 186172525,
                 'MLB' => 186175129,
@@ -151,7 +153,7 @@ class MercadoPago_Core_Model_Observer
                 'MPE' => 217178514,
                 'MLU' => 247028139,
             ];
-            $countryCode = $user['response']['site_id'];
+            $countryCode = $user['body']['site_id'];
 
             if (isset($sponsors[$countryCode])) {
                 $sponsorId = $sponsors[$countryCode];
@@ -222,18 +224,23 @@ class MercadoPago_Core_Model_Observer
         $clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
         $clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
-        $response = null;
-
-        $access_token = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
-
+        $accessToken = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
+        $params = [
+            'json_data'  => ['status' => 'cancelled'],
+            'url_params' => ['access_token' => $accessToken],
+            'uri'        => '/collections/' . $paymentID
+        ];
         if ($paymentMethod == 'mercadopago_standard') {
-            $response = $mp->cancel_payment($paymentID);
+            Mage::helper('mercadopago')->initApiInstance($clientId, $clientSecret);
+            //$response = $mp->cancel_payment($paymentID);
+            $response = \MercadoPago\Sdk::put($params);
         } else {
+            Mage::helper('mercadopago')->initApiInstance($accessToken);
             $data = [
-                "status" => 'cancelled',
+                "status" => 'cancelled'
             ];
-            $response = $mp->put("/v1/payments/$paymentID?access_token=$access_token", $data);
+            $response = \MercadoPago\Sdk::put("/v1/payments", $data);
+            //$response = $mp->put("/v1/payments/$paymentID?access_token=$access_token", $data);
         }
 
         if ($response['status'] == 200) {
@@ -241,7 +248,7 @@ class MercadoPago_Core_Model_Observer
             $this->_getSession()->addSuccess(__('Cancellation made by Mercado Pago'));
         } else {
             $this->_getSession()->addError(__('Failed to make the cancellation by Mercado Pago'));
-            $this->_getSession()->addError($response['status'] . ' ' . $response['response']['message']);
+            $this->_getSession()->addError($response['code'] . ' ' . $response['body']['message']);
             $this->throwCancelationException();
         }
     }
@@ -439,13 +446,19 @@ class MercadoPago_Core_Model_Observer
 
         $response = null;
         $amount = $creditMemo->getGrandTotal();
+
         if ($paymentMethod == 'mercadopago_standard') {
             $paymentID = $order->getPayment()->getData('additional_information')['id'];
             $clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
-            $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
+            $params = [
+                'json_data'  => ['status' => 'refund'],
+                'uri'        => '/collections/' . $paymentID
+            ];
+            Mage::helper('mercadopago')->initApiInstance($clientId, $clientSecret);
             if ($isTotalRefund) {
-                $response = $mp->refund_payment($paymentID);
+                $response = \MercadoPago\Sdk::put($params);
+                //$response = $mp->refund_payment($paymentID);
                 $order->setMercadoPagoRefundType('total');
             } else {
                 $order->setMercadoPagoRefundType('partial');
@@ -453,23 +466,33 @@ class MercadoPago_Core_Model_Observer
                     "reason"             => '',
                     "external_reference" => $order->getIncrementId(),
                 ];
-                $params = [
+                $params['json_data'] = [
                     "amount"   => $amount,
                     "metadata" => $metadata,
                 ];
-                $response = $mp->post('/collections/' . $paymentID . '/refunds?access_token=' . $mp->get_access_token(), $params);
+                $params['uri'] = "/collections/$paymentID/refunds";
+                //$response = $mp->post('/collections/' . $paymentID . '/refunds?access_token=' . $mp->get_access_token(), $params);
+                $response = \MercadoPago\Sdk::post($params);
             }
         } else {
             $paymentID = $order->getPayment()->getData('additional_information')['payment_id_detail'];
             $accessToken = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
-            $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
+            Mage::helper('mercadopago')->initApiInstance($accessToken);
+            $params = [
+                'json_data'  => ['status' => 'refund'],
+                'url_params' => ['access_token' => $accessToken],
+                'uri'        => "/v1/payments/$paymentID/refunds"
+            ];
             if ($isTotalRefund) {
-                $response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken", []);
+                //$response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken", []);
+                $response = \MercadoPago\Sdk::post($params);
             } else {
                 $params = [
                     "amount" => $amount,
                 ];
-                $response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken", $params);
+                //$response = $mp->post("/v1/payments/$paymentID/refunds?access_token=$accessToken", $params);
+                $response = \MercadoPago\Sdk::post($params);
+
             }
         }
 
@@ -478,7 +501,7 @@ class MercadoPago_Core_Model_Observer
             $this->_getSession()->addSuccess(__('Refund made by Mercado Pago'));
         } else {
             $this->_getSession()->addError(__('Failed to make the refund by Mercado Pago'));
-            $this->_getSession()->addError($response['status'] . ' ' . $response['response']['message']);
+            $this->_getSession()->addError($response['code'] . ' ' . $response['body']['message']);
             $this->throwRefundException();
         }
     }

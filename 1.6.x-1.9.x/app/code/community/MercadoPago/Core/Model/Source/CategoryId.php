@@ -21,10 +21,12 @@ class MercadoPago_Core_Model_Source_CategoryId
     {
         Mage::helper('mercadopago')->log("Get Categories... ", 'mercadopago.log');
 
-        $response = MercadoPago_Lib_RestClient::get("/item_categories");
+        //$response = MercadoPago_Lib_RestClient::get("/item_categories");
+        \MercadoPago\Sdk::initialize();
+        $response = \MercadoPago\Sdk::get('/item_categories');
         Mage::helper('mercadopago')->log("API item_categories", 'mercadopago.log', $response);
 
-        $response = $response['response'];
+        $response = $response['body'];
 
         $cat = array();
         $count = 0;

@@ -91,7 +91,7 @@ class MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios
 
             $clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
-            $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
+            Mage::helper('mercadopago')->initApiInstance($clientId, $clientSecret);
 
             $params = [
                 "dimensions" => $dimensions,
@@ -102,13 +102,15 @@ class MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios
             if (!empty($freeMethod)) {
                 $params['free_method'] = $freeMethod;
             }
-            $response = $mp->get("/shipping_options", $params);
-            if ($response['status'] == 200) {
-                $this->_methods = $response['response']['options'];
+
+            $response = \MercadoPago\Sdk::get('/shipping_options', $params);
+            //$response = $mp->get("/shipping_options", $params);
+            if ($response['code'] == 200) {
+                $this->_methods = $response['body']['options'];
             } else {
                 $this->_methods = self::INVALID_METHOD;
-                if (isset($response['response']['message'])) {
-                    Mage::register('mercadoenvios_msg', $response['response']['message']);
+                if (isset($response['bpdy']['message'])) {
+                    Mage::register('mercadoenvios_msg', $response['body']['message']);
                 }
                 Mage::helper('mercadopago_mercadoenvios')->log('Request params: ', $params);
                 Mage::helper('mercadopago_mercadoenvios')->log('Error response API: ', $response);

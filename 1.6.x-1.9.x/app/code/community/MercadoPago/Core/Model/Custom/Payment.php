@@ -56,12 +56,12 @@ class MercadoPago_Core_Model_Custom_Payment
             $usingSecondCardInfo['second_card']['token'] = $this->getInfoInstance()->getAdditionalInformation('second_card_token');
 
             $responseFirstCard = $this->preparePostPayment($usingSecondCardInfo['first_card']);
-            if (isset($responseFirstCard) && ($responseFirstCard['response']['status'] == 'approved') ) {
-                $paymentFirstCard = $responseFirstCard['response'];
+            if (isset($responseFirstCard) && ($responseFirstCard['body']['status'] == 'approved') ) {
+                $paymentFirstCard = $responseFirstCard['body'];
                 $responseSecondCard = $this->preparePostPayment($usingSecondCardInfo['second_card']);
 
-                if (isset($responseSecondCard) && ($responseSecondCard['response']['status'] == 'approved') ) {
-                    $paymentSecondCard = $responseSecondCard['response'];
+                if (isset($responseSecondCard) && ($responseSecondCard['body']['status'] == 'approved') ) {
+                    $paymentSecondCard = $responseSecondCard['body'];
                     $this->getInfoInstance()->setAdditionalInformation('status', $paymentFirstCard['status'] . ' | ' . $paymentSecondCard['status']);
                     $this->getInfoInstance()->setAdditionalInformation('payment_id_detail', $paymentFirstCard['id']  . ' | ' . $paymentSecondCard['id']);
                     $this->getInfoInstance()->setAdditionalInformation('status_detail', $paymentFirstCard['status_detail'] . ' | ' . $paymentSecondCard['status_detail']);
@@ -86,9 +86,11 @@ class MercadoPago_Core_Model_Custom_Payment
                 } else {
                     //second card payment failed, refund for first card
                     $accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
-                    $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
-                    $id = $paymentFirstCard['id'];
-                    $refundResponse = $mp->post("/v1/payments/$id/refunds?access_token=$accessToken");
+                    Mage::helper('mercadopago')->initApiInstance($accessToken);
+                    //$refundResponse = $mp->post("/v1/payments/$id/refunds?access_token=$accessToken");
+                    $refund = new \MercadoPago\Refund();
+                    $refund->id = $paymentFirstCard['id'];
+                    $refundResponse = $refund->save();
                     Mage::helper('mercadopago')->log("info form", self::LOG_FILE, $refundResponse);
                     return false;
                 }
@@ -102,7 +104,7 @@ class MercadoPago_Core_Model_Custom_Payment
             $response = $this->preparePostPayment();
 
             if ($response) {
-                $payment = $response['response'];
+                $payment = $response['body'];
                 //set status
                 $this->getInfoInstance()->setAdditionalInformation('status', $payment['status']);
                 $this->getInfoInstance()->setAdditionalInformation('payment_id_detail', $payment['id']);
@@ -263,27 +265,30 @@ class MercadoPago_Core_Model_Custom_Payment
         if (empty($email)) {
             return false;
         }
-        $access_token = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
+        $accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($access_token);
+        Mage::helper('mercadopago')->initApiInstance($accessToken);
 
-        $customer = $mp->get("/v1/customers/search", ["email" => $email]);
+        $customer = new \MercadoPago\Customer();
+        $customer->email = $email;
+
+        $response = $customer->search();
 
         Mage::helper('mercadopago')->log("Response search customer", self::LOG_FILE, $customer);
 
-        if ($customer['status'] == 200) {
+        if ($response['code'] == 200) {
 
-            if ($customer['response']['paging']['total'] > 0) {
-                return $customer['response']['results'][0];
+            if ($customer->id) {
+                return $customer->toArray();
             } else {
                 Mage::helper('mercadopago')->log("Customer not found: " . $email, self::LOG_FILE);
 
-                $customer = $mp->post("/v1/customers", ["email" => $email]);
+                $response = $customer->save();
 
                 Mage::helper('mercadopago')->log("Response create customer", self::LOG_FILE, $customer);
 
-                if ($customer['status'] == 201) {
-                    return $customer['response'];
+                if ($response['code'] == 201) {
+                    return $customer->toArray();
                 } else {
                     return false;
                 }
@@ -295,36 +300,38 @@ class MercadoPago_Core_Model_Custom_Payment
 
     public function checkAndcreateCard($customer, $token, $payment)
     {
-        $access_token = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
+        $accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($access_token);
+        Mage::helper('mercadopago')->initApiInstance($accessToken);
 
         foreach ($customer['cards'] as $card) {
 
 
-            if ($card['first_six_digits'] == $payment['card']['first_six_digits']
-                && $card['last_four_digits'] == $payment['card']['last_four_digits']
-                && $card['expiration_month'] == $payment['card']['expiration_month']
-                && $card['expiration_year'] == $payment['card']['expiration_year']
+            if ($card->first_six_digits == $payment['card']['first_six_digits']
+                && $card->last_four_digits == $payment['card']['last_four_digits']
+                && $card->expiration_month == $payment['card']['expiration_month']
+                && $card->expiration_year == $payment['card']['expiration_year']
             ) {
                 Mage::helper('mercadopago')->log("Card already exists", self::LOG_FILE, $card);
 
                 return $card;
             }
         }
-        $params = ["token" => $token];
+        $params = ['token' => $token];
         if (isset($payment['issuer_id'])) {
             $params['issuer_id'] = (int)$payment['issuer_id'];
         }
         if (isset($payment['payment_method_id'])) {
             $params['payment_method_id'] = $payment['payment_method_id'];
         }
-        $card = $mp->post("/v1/customers/" . $customer['id'] . "/cards", $params);
+        $mpCard = new \MercadoPago\Card($params);
+        $mpCard->customer_id = $customer->id;
+        $response = $mpCard->save();
 
-        Mage::helper('mercadopago')->log("Response create card", self::LOG_FILE, $card);
+        Mage::helper('mercadopago')->log("Response create card", self::LOG_FILE, $mpCard->toArray());
 
-        if ($card['status'] == 201) {
-            return $card['response'];
+        if ($response['code'] == 201) {
+            return $response['body'];
         }
 
         return false;

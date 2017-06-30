@@ -126,31 +126,28 @@ class MercadoPago_Core_Model_Recurring_Payment
         $this->_sendPreapprovalPaymentRequest($profile, $preapprovalData);
     }
 
-    protected function _sendPreapprovalPaymentRequest($profile, $preapproval_data) {
+    protected function _sendPreapprovalPaymentRequest($profile, $preapprovalData) {
         $clientId = Mage::getStoreConfig('payment/mercadopago_recurring/client_id');
         $clientSecret = Mage::getStoreConfig('payment/mercadopago_recurring/client_secret');
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
+        Mage::helper('mercadopago')->initApiInstance($clientId, $clientSecret);
         $sandbox = Mage::getStoreConfig('payment/mercadopago_recurring/sandbox_mode');
 
-        if ($sandbox) {
-            $mp->sandbox_mode(true);
-        }
-
-        $response = $mp->create_preapproval_payment($preapproval_data);
-        if ($response['status'] == 201 || $response['status'] == 200) {
+        //$response = $mp->create_preapproval_payment($preapproval_data);
+        $response = \MercadoPago\Sdk::post('/preapproval', $preapprovalData);
+        if ($response['code'] == 201 || $response['code'] == 200) {
             if ($sandbox) {
-                $redirectUrl = $response['response']['sandbox_init_point'];
+                $redirectUrl = $response['body']['sandbox_init_point'];
             } else {
-                $redirectUrl = $response['response']['init_point'];
+                $redirectUrl = $response['body']['init_point'];
             }
             Mage::getSingleton('customer/session')->setInitPoint($redirectUrl);
-            $profile->setData('reference_id', $response['response']['id']);
+            $profile->setData('reference_id', $response['body']['id']);
             $profile->setData('schedule_description', $redirectUrl);
-            $profile->setData('external_reference', $response['response']['id']);
+            $profile->setData('external_reference', $response['body']['id']);
         } else {
             Mage::throwException(Mage::helper('mercadopago')->__('Mercado Pago - Recurring Profile not created')
-                . "\n" . $response['response']['message']);
+                . "\n" . $response['body']['message']);
         }
     }
 

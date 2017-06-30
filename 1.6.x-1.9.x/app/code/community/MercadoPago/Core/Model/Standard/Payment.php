@@ -45,14 +45,16 @@ class MercadoPago_Core_Model_Standard_Payment
 
         //create preference
         $pref = $this->makePreference();
+        $preference = new \MercadoPago\Preference($pref);
         Mage::helper('mercadopago')->log("make array", self::LOG_FILE, $pref);
 
+        $response = $preference->save();
+        //$response = $mp->create_preference($pref);
         //make payment request
-        $response = $mp->create_preference($pref);
         Mage::helper('mercadopago')->log("create preference result", self::LOG_FILE, $response);
 
-        if ($response['status'] == 200 || $response['status'] == 201) {
-            $payment = $response['response'];
+        if ($response['code'] == 200 || $response['code'] == 201) {
+            $payment = $response['body'];
             if (Mage::getStoreConfigFlag('payment/mercadopago_standard/sandbox_mode')) {
                 $init_point = $payment['sandbox_init_point'];
             } else {

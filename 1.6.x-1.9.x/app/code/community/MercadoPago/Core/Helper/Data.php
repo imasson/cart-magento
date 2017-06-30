@@ -39,6 +39,7 @@ class MercadoPago_Core_Helper_Data
     protected $_apiInstance;
 
     protected $_website;
+    protected $_config;
 
     public function log($message, $file = "mercadopago.log", $array = null)
     {
@@ -79,44 +80,58 @@ class MercadoPago_Core_Helper_Data
         return $this->_apiInstance;
     }
 
+    public function initApiInstance()
+    {
+        if (!$this->_config) {
+            \MercadoPago\Sdk::initialize();
+            $this->_config = \MercadoPago\Sdk::config();
+        }
+
+        $params = func_num_args();
+        if (empty($params)) {
+            return;
+        }
+        $type = self::TYPE . ' ' . (string)Mage::getConfig()->getModuleConfig("MercadoPago_Core")->version;
+        if ($params == 1) {
+            $this->_config->set('ACCESS_TOKEN', func_get_arg(0));
+            \MercadoPago\Sdk::addCustomTrackingParam('x-tracking-id', 'platform:' . self::PLATFORM_V1_WHITELABEL . ',type:' . $type . ',so;');
+        } else {
+            $this->_config->set('CLIENT_ID', func_get_arg(0));
+            $this->_config->set('CLIENT_SECRET', func_get_arg(1));
+            \MercadoPago\Sdk::addCustomTrackingParam('x-tracking-id', 'platform:' . self::PLATFORM_DESKTOP . ',type:' . $type . ',so;');
+        }
+    }
+
     public function isValidAccessToken($accessToken)
     {
-        $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
-        try {
-            $response = $mp->get("/v1/payment_methods");
-            if ($response['status'] == 401 || $response['status'] == 400) {
-                return false;
-            }
-
-            return true;
-        } catch (\Exception $e) {
+        $this->initApiInstance();
+        $response = \MercadoPago\Sdk::get("/v1/payment_methods", ['url_query' => ['access_token' => $accessToken]]);
+        if ($response['code'] == 401 || $response['code'] == 400) {
             return false;
         }
+        $this->_config->set('ACCESS_TOKEN', $accessToken);
+
+        return true;
     }
 
     public function isValidClientCredentials($clientId, $clientSecret)
     {
-        $mp = Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret);
-        try {
-            $mp->get_access_token();
-        } catch (Exception $e) {
-            return false;
-        }
+        $this->initApiInstance($clientId, $clientSecret);
+        $accessToken = $this->_config->get('ACCESS_TOKEN');
 
-        return true;
+        return !empty($accessToken);
     }
 
     public function getAccessToken()
     {
         $clientId = Mage::getStoreConfig(self::XML_PATH_CLIENT_ID);
         $clientSecret = Mage::getStoreConfig(self::XML_PATH_CLIENT_SECRET);
-        try {
-            $accessToken = $this->getApiInstance($clientId, $clientSecret)->get_access_token();
-        } catch (\Exception $e) {
-            $accessToken = false;
-        }
 
-        return $accessToken;
+        if ($this->isValidClientCredentials($clientId, $clientSecret)) {
+            return $this->_config->get('ACCESS_TOKEN');
+        } else {
+            return false;
+        }
     }
 
     public function setOrderSubtotals($data, $order)
@@ -263,13 +278,13 @@ class MercadoPago_Core_Helper_Data
      */
     public function getMercadoPagoPaymentMethods($accessToken)
     {
-        $mp = Mage::helper('mercadopago')->getApiInstance($accessToken);
-        $response = $mp->get("/v1/payment_methods");
-        if ($response['status'] == 401 || $response['status'] == 400) {
+        $this->initApiInstance($accessToken);
+        $response = \MercadoPago\Sdk::get("/v1/payment_methods");
+        if ($response['code'] == 401 || $response['code'] == 400) {
             return false;
         }
 
-        return $response['response'];
+        return $response['body'];
     }
 
     /**
@@ -341,18 +356,20 @@ class MercadoPago_Core_Helper_Data
         $clientId = $this->_website->getConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
         $clientSecret = $this->_website->getConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         if (!empty($clientId) && !empty($clientSecret)) {
-            $this->sendAnalyticsData(Mage::helper('mercadopago')->getApiInstance($clientId, $clientSecret));
+            $this->initApiInstance($clientId, $clientSecret);
+            $this->sendAnalyticsData();
         } else {
             $accessToken = $this->_website->getConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
             if (!empty($accessToken)) {
-                $this->sendAnalyticsData(Mage::helper('mercadopago')->getApiInstance($accessToken));
+                $this->initApiInstance($accessToken);
+                $this->sendAnalyticsData();
             }
 
         }
 
     }
 
-    protected function sendAnalyticsData($api)
+    protected function sendAnalyticsData()
     {
         $request = [
             "data" => $this->getPlatformInfo()
@@ -371,8 +388,8 @@ class MercadoPago_Core_Helper_Data
         }
 
         $this->log("Analytics settings request sent /modules/tracking/settings", 'mercadopago_analytics.log', $request);
-        $account_settings = $api->post("/modules/tracking/settings", $request['data']);
-        $this->log("Analytics settings response", 'mercadopago_analytics.log', $account_settings);
+        $response = \MercadoPago\Sdk::post("/modules/tracking/settings", $request['data']);
+        $this->log("Analytics settings response", 'mercadopago_analytics.log', $response);
 
     }
 

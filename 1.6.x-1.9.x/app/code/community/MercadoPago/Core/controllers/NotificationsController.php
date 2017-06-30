@@ -138,7 +138,7 @@ class MercadoPago_Core_NotificationsController
             $this->_helper->log('Return payment', self::LOG_FILE, $response);
 
             if ($this->_isValidResponse($response)) {
-                $payment = $response['response'];
+                $payment = $response['body'];
 
                 $payment = $this->_helper->setPayerInfo($payment);
                 $this->_order = Mage::getModel('sales/order')->loadByIncrementId($payment['external_reference']);
@@ -198,7 +198,7 @@ class MercadoPago_Core_NotificationsController
         if (!$this->_isValidResponse($response)) {
             return [];
         }
-        $payment = $response['response']['collection'];
+        $payment = $response['body']['collection'];
 
         return $this->_statusHelper->formatArrayPayment($data, $payment, self::LOG_FILE);
     }
@@ -220,7 +220,7 @@ class MercadoPago_Core_NotificationsController
 
     protected function _isValidMerchantOrder($merchantOrder)
     {
-        $this->_merchantOrder = $merchantOrder['response'];
+        $this->_merchantOrder = $merchantOrder['body'];
         if ($this->_isValidResponse($merchantOrder) && count($this->_merchantOrder['payments']) > 0) {
             $this->_responseLog();
 
@@ -232,7 +232,7 @@ class MercadoPago_Core_NotificationsController
 
     protected function _isValidResponse($response)
     {
-        return ($response['status'] == 200 || $response['status'] == 201);
+        return ($response['code'] == 200 || $response['code'] == 201);
     }
 
     protected function _emptyParams($p1, $p2)
@@ -302,9 +302,9 @@ class MercadoPago_Core_NotificationsController
 
         $response = $this->getCore()->getRecurringPayment($preapprovalId);
 
-        $profileId = $response ['response']['external_reference'];
-        $newState = $response ['response']['status'];
-        $newAmount = $response ['response']['auto_recurring']['transaction_amount'];
+        $profileId = $response ['body']['external_reference'];
+        $newState = $response ['body']['status'];
+        $newAmount = $response ['body']['auto_recurring']['transaction_amount'];
 
         $profile = Mage::getModel('sales/recurring_profile')->load($profileId);
         $actualState = $profile->getState();
@@ -343,11 +343,11 @@ class MercadoPago_Core_NotificationsController
             return;
         }
         $paymentData = $this->getCore()->getPayment($params['id']);
-        if (empty($paymentData) || ($paymentData['status'] != 200 && $paymentData['status'] != 201)) {
+        if (empty($paymentData) || ($paymentData['code'] != 200 && $paymentData['code'] != 201)) {
             return;
         }
         Mage::helper('mercadopago')->log('Recurring PaymentAction Data', self::LOG_FILE, $paymentData);
-        $paymentData=$paymentData['response']['collection'];
+        $paymentData = $paymentData['body']['collection'];
         if ($paymentData['operation_type'] == 'recurring_payment' && $paymentData['status'] == 'approved') {
             $profile = Mage::getModel('sales/recurring_profile')->load($paymentData['external_reference']);
             if ($profile->getId()) {

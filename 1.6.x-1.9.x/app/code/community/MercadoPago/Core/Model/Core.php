@@ -238,9 +238,9 @@ class MercadoPago_Core_Model_Core
     protected function getCouponInfo($coupon, $couponCode)
     {
         $infoCoupon = [];
-        $infoCoupon['coupon_amount'] = (float)$coupon['response']['coupon_amount'];
+        $infoCoupon['coupon_amount'] = (float)$coupon['body']['coupon_amount'];
         $infoCoupon['coupon_code'] = $couponCode;
-        $infoCoupon['campaign_id'] = $coupon['response']['id'];
+        $infoCoupon['campaign_id'] = $coupon['body']['id'];
         if ($coupon['status'] == 200) {
             Mage::helper('mercadopago')->log("Coupon applied. API response 200.", self::LOG_FILE);
         } else {
@@ -345,17 +345,19 @@ class MercadoPago_Core_Model_Core
         Mage::helper('mercadopago')->log("Access Token for Post", self::LOG_FILE, $this->_accessToken);
 
         //set sdk php mercadopago
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
-        $response = $mp->post("/v1/payments", $preference);
+        $mp = Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
+        //$response = $mp->post("/v1/payments", $preference);
+        $preference = new \MercadoPago\Payment($preference);
+        $response = $preference->save();
         Mage::helper('mercadopago')->log("POST /v1/payments", self::LOG_FILE, $response);
 
-        if ($response['status'] == 200 || $response['status'] == 201) {
+        if ($response['code'] == 200 || $response['code'] == 201) {
             return $response;
         } else {
-            $e = "";
+            $e = '';
             $exception = new MercadoPago_Core_Model_Api_V1_Exception();
-            if (count($response['response']['cause']) > 0) {
-                foreach ($response['response']['cause'] as $error) {
+            if (count($response['body']['cause']) > 0) {
+                foreach ($response['body']['cause'] as $error) {
                     $e .= $exception->getUserMessage($error) . " ";
                 }
             } else {
@@ -370,36 +372,38 @@ class MercadoPago_Core_Model_Core
         }
     }
 
-    public function getPayment($payment_id)
+    public function getPayment($paymentId)
     {
         if (!$this->_clientId || !$this->_clientSecret) {
             $this->_clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $this->_clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_clientId, $this->_clientSecret);
+        Mage::helper('mercadopago')->initApiInstance($this->_clientId, $this->_clientSecret);
 
-        return $mp->get_payment($payment_id);
+        $payment = new \MercadoPago\Payment();
+        $payment->id = $paymentId;
+        return $payment->search();
     }
 
-    public function getPaymentV1($payment_id)
+    public function getPaymentV1($paymentId)
     {
         if (!$this->_accessToken) {
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
-        return $mp->get("/v1/payments/" . $payment_id);
+        return \MercadoPago\Sdk::get("/v1/payments/" . $paymentId);
     }
 
-    public function getMerchantOrder($merchant_order_id)
+    public function getMerchantOrder($merchantOrderId)
     {
         if (!$this->_clientId || !$this->_clientSecret) {
             $this->_clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $this->_clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_clientId, $this->_clientSecret);
+        Mage::helper('mercadopago')->initApiInstance($this->_clientId, $this->_clientSecret);
 
-        return $mp->get("/merchant_orders/" . $merchant_order_id);
+        return \MercadoPago\Sdk::get("/merchant_orders/" . $merchantOrderId);
     }
 
     public function getPaymentMethods()
@@ -408,11 +412,11 @@ class MercadoPago_Core_Model_Core
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
-        $payment_methods = $mp->get("/v1/payment_methods");
+        $paymentMethods = \MercadoPago\Sdk::get("/v1/payment_methods");
 
-        return $payment_methods;
+        return $paymentMethods;
     }
 
     public function getEmailCustomer()
@@ -444,7 +448,7 @@ class MercadoPago_Core_Model_Core
             $this->_accessToken = Mage::getStoreConfig(self::XML_PATH_ACCESS_TOKEN);
         }
 
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
 
         $params = array(
             "transaction_amount" => $this->getAmount(),
@@ -452,14 +456,14 @@ class MercadoPago_Core_Model_Core
             "coupon_code"        => $id
         );
 
-        $details_discount = $mp->get("/discount_campaigns", $params);
+        $detailsDiscount = \MercadoPago\Sdk::get('/discount_campaigns', ['url_query' => $params]);
 
         //add value on return api discount
-        $details_discount['response']['transaction_amount'] = $params['transaction_amount'];
-        $details_discount['response']['params'] = $params;
+        $detailsDiscount['body']['transaction_amount'] = $params['transaction_amount'];
+        $detailsDiscount['body']['params'] = $params;
 
 
-        return $details_discount;
+        return $detailsDiscount;
     }
 
     public function updateOrder($order = null, $data)
@@ -560,9 +564,10 @@ class MercadoPago_Core_Model_Core
             $this->_clientId = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_ID);
             $this->_clientSecret = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_CLIENT_SECRET);
         }
-        $mp = Mage::helper('mercadopago')->getApiInstance($this->_clientId, $this->_clientSecret);
+        Mage::helper('mercadopago')->initApiInstance($this->_clientId, $this->_clientSecret);
+        $response = \MercadoPago\Sdk::get("/preapproval/" . $id);
 
-        return $mp->get_preapproval_payment($id);
+        return $response;
     }
 
 }
