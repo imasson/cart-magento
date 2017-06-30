@@ -9,10 +9,7 @@ default:
     Cjm\Behat\StepThroughExtension: ~
     MageTest\MagentoExtension\Extension: ~
     Bex\Behat\ScreenshotExtension:
-                  active_image_drivers: upload_pie
-                        image_drivers:
-                          upload_pie:
-                            auth: 'dzm3cT'
+          active_image_drivers: unsee
     Behat\MinkExtension:
       base_url: "%MAGENTO_URL%"
       selenium2:

@@ -24,7 +24,7 @@
     "squizlabs/php_codesniffer": "2.3.*",
     "sebastian/phpcpd": "*",
     "bex/behat-screenshot" : "*",
-    "bex/behat-screenshot-image-driver-uploadpie" : "*"
+    "bex/behat-screenshot-image-driver-unsee" : "*"
   },
   "autoload": {
     "psr-0": {
