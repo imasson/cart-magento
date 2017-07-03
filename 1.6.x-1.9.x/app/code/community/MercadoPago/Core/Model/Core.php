@@ -345,10 +345,10 @@ class MercadoPago_Core_Model_Core
         Mage::helper('mercadopago')->log("Access Token for Post", self::LOG_FILE, $this->_accessToken);
 
         //set sdk php mercadopago
-        $mp = Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
+        Mage::helper('mercadopago')->initApiInstance($this->_accessToken);
         //$response = $mp->post("/v1/payments", $preference);
-        $preference = new \MercadoPago\Payment($preference);
-        $response = $preference->save();
+        $response = \MercadoPago\Sdk::post("/v1/payments", ['json_data' => $preference]);
+
         Mage::helper('mercadopago')->log("POST /v1/payments", self::LOG_FILE, $response);
 
         if ($response['code'] == 200 || $response['code'] == 201) {
