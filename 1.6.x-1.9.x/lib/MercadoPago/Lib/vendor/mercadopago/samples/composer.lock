@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0e03bf87ea84b621c099c1120688f83a",
+    "hash": "a3458ddfd8372f6332b0d551e12533de",
+    "content-hash": "ef7cf7b3b01e8f00c5c5d89b7e8603f8",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -72,7 +73,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2017-02-24T16:22:25+00:00"
+            "time": "2017-02-24 16:22:25"
         },
         {
             "name": "doctrine/cache",
@@ -142,7 +143,7 @@
                 "cache",
                 "caching"
             ],
-            "time": "2016-10-29T11:16:17+00:00"
+            "time": "2016-10-29 11:16:17"
         },
         {
             "name": "doctrine/collections",
@@ -209,7 +210,7 @@
                 "collections",
                 "iterator"
             ],
-            "time": "2017-01-03T10:49:41+00:00"
+            "time": "2017-01-03 10:49:41"
         },
         {
             "name": "doctrine/common",
@@ -282,7 +283,7 @@
                 "persistence",
                 "spl"
             ],
-            "time": "2017-01-13T14:02:13+00:00"
+            "time": "2017-01-13 14:02:13"
         },
         {
             "name": "doctrine/inflector",
@@ -349,7 +350,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2015-11-06T14:35:42+00:00"
+            "time": "2015-11-06 14:35:42"
         },
         {
             "name": "doctrine/lexer",
@@ -403,21 +404,15 @@
                 "lexer",
                 "parser"
             ],
-            "time": "2014-09-09T13:34:57+00:00"
+            "time": "2014-09-09 13:34:57"
         },
         {
             "name": "mercadopago/px-php",
             "version": "dev-develop",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mercadopago/px-php.git",
-                "reference": "9c85aeac165c0e7890d12453e83ae1430bd570db"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mercadopago/px-php/zipball/9c85aeac165c0e7890d12453e83ae1430bd570db",
-                "reference": "9c85aeac165c0e7890d12453e83ae1430bd570db",
-                "shasum": ""
+                "url": "git@github.com:mercadopago/px-php.git",
+                "reference": "18a10842821457dc3c5dc5f7dce3c8307a4c1667"
             },
             "require": {
                 "doctrine/common": "~2.4",
@@ -427,6 +422,7 @@
                 "doctrine/orm": "~2.3",
                 "phpmd/phpmd": "@stable",
                 "phpunit/phpunit": "~4.0",
+                "satooshi/php-coveralls": "dev-master",
                 "sebastian/phpcpd": "*",
                 "squizlabs/php_codesniffer": "2.3.*",
                 "symfony/yaml": "~2.5"
@@ -454,11 +450,7 @@
                 }
             ],
             "homepage": "https://github.com/mercadopago/px-php",
-            "support": {
-                "source": "https://github.com/mercadopago/px-php/tree/develop",
-                "issues": "https://github.com/mercadopago/px-php/issues"
-            },
-            "time": "2017-06-26 17:34:16"
+            "time": "2017-03-31 14:25:27"
         }
     ],
     "packages-dev": [],
