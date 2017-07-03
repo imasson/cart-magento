@@ -104,7 +104,7 @@ class MercadoPago_Core_Helper_Data
 
     public function isValidAccessToken($accessToken)
     {
-        $this->initApiInstance();
+        $this->initApiInstance($accessToken);
         $response = \MercadoPago\Sdk::get("/v1/payment_methods");
         if ($response['code'] == 401 || $response['code'] == 400) {
             return false;
