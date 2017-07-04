@@ -92,6 +92,5 @@ script:
   - vendor/bin/phpcpd ../../../ --exclude=dev
   - vendor/bin/behat --config behat.yml --tags ${BEHAT_TAG} --tags="~@skip"
   - sudo cat /var/log/apache2/errormp.log
-  - cd "%TRAVIS_BUILD_DIR%/htdocs/"
-  - cd var/log
+  - cd ../../../var/log
   - tail -n 100 *log

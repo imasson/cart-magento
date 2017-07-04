@@ -388,7 +388,7 @@ class MercadoPago_Core_Helper_Data
         }
 
         $this->log("Analytics settings request sent /modules/tracking/settings", 'mercadopago_analytics.log', $request);
-        $response = \MercadoPago\Sdk::post("/modules/tracking/settings", $request['data']);
+        $response = \MercadoPago\Sdk::post("/modules/tracking/settings", ['json_data' => $request['data']]);
         $this->log("Analytics settings response", 'mercadopago_analytics.log', $response);
 
     }

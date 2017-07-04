@@ -237,7 +237,7 @@ class MercadoPago_Core_Model_Observer
         } else {
             Mage::helper('mercadopago')->initApiInstance($accessToken);
             $data = [
-                "status" => 'cancelled'
+                'json_data' => ['status' => 'cancelled']
             ];
             $response = \MercadoPago\Sdk::put("/v1/payments", $data);
             //$response = $mp->put("/v1/payments/$paymentID?access_token=$access_token", $data);
@@ -480,7 +480,6 @@ class MercadoPago_Core_Model_Observer
             Mage::helper('mercadopago')->initApiInstance($accessToken);
             $params = [
                 'json_data'  => ['status' => 'refund'],
-                'url_params' => ['access_token' => $accessToken],
                 'uri'        => "/v1/payments/$paymentID/refunds"
             ];
             if ($isTotalRefund) {
