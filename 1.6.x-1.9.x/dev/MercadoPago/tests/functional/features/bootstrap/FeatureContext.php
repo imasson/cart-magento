@@ -637,6 +637,7 @@ class FeatureContext
         $obj->settingConfig('payment/mercadopago_custom/active', '1');
         $obj->settingConfig('payment/mercadopago/use_successpage_mp', '1'); //with '1' use MercadoPago successPage
         $obj->settingConfig('payment/mercadopago/calculalator_available', '0');
+        $obj->settingConfig('payment/mercadopago/logs', '1');
     }
 
     /**
