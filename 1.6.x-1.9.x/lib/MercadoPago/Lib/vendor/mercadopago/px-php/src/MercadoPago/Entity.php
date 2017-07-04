@@ -244,7 +244,7 @@ abstract class Entity
         if (!$definedType) {
             return true;
         }
-        if (is_object($type) && class_exists($definedType)) {
+        if (is_object($type) && class_exists($definedType, false)) {
             return ($type instanceof $definedType);
         }
         return gettype($type) == $definedType;
