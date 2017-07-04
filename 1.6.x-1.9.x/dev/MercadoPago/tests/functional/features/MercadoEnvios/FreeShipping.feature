@@ -64,7 +64,7 @@ Feature: As a customer I want to have a section to calculate the shipping cost w
      # | mlm     | 501345      | 22615    | MX            | 100    | $0.00          |
       | mlm     | 501345      | 22615    | MX            | 150    | -              |
 
-  @FreeShippingCheckoutStandard
+  @FreeShippingCheckoutStandard @skip
   Scenario: FreeShipping complete checkout
     Given Setting merchant "mla"
     When I enable methods of "mla"
@@ -89,7 +89,7 @@ Feature: As a customer I want to have a section to calculate the shipping cost w
     And I am logged 2 in MP as "test_user_58666377@testuser.com" "qatest3200"
     And I switch to the site
     And I switch to the iframe "checkout_mercadopago"
-    Then I should  see "Gratis"
+    Then I should see "Gratis"
 
 
   Scenario: FreeShipping configured

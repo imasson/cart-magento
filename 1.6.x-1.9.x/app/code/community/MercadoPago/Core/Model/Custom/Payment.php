@@ -317,18 +317,19 @@ class MercadoPago_Core_Model_Custom_Payment
                 return $card;
             }
         }
-        $params = [];
+        $params = [
+            'json_data' => ["token" => $token]
+        ];
         if (isset($payment['issuer_id'])) {
-            $params['issuer_id'] = (int)$payment['issuer_id'];
+            $params['json_data']['issuer_id'] = (int)$payment['issuer_id'];
         }
         if (isset($payment['payment_method_id'])) {
-            $params['payment_method_id'] = $payment['payment_method_id'];
+            $params['json_data']['payment_method_id'] = $payment['payment_method_id'];
         }
-        $mpCard = new \MercadoPago\Card($params);
-        $mpCard->customer_id = $customer->id;
-        $response = $mpCard->save();
+        $response = \MercadoPago\SDK::post ("/v1/customers/".$customer->id."/cards", $params);
 
-        Mage::helper('mercadopago')->log("Response create card", self::LOG_FILE, $mpCard->toArray());
+
+        Mage::helper('mercadopago')->log("Response create card", self::LOG_FILE, $response);
 
         if ($response['code'] == 201) {
             return $response['body'];
