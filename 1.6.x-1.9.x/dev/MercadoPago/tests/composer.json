@@ -10,7 +10,8 @@
   ],
   "minimum-stability": "stable",
   "require": {
-    "php": "~5.3.0|~5.4.0"
+    "php": "~5.3.0|~5.6.30",
+    "bex/behat-screenshot-image-driver-unsee": "^1.0"
   },
   "require-dev": {
     "magetest/magento-behat-extension": "dev-feature/Behat3",
@@ -24,7 +25,6 @@
     "squizlabs/php_codesniffer": "2.3.*",
     "sebastian/phpcpd": "*",
     "bex/behat-screenshot" : "*",
-    "bex/behat-screenshot-image-driver-unsee" : "*",
     "bex/behat-screenshot-image-driver-img42" : "*"
   },
   "autoload": {
