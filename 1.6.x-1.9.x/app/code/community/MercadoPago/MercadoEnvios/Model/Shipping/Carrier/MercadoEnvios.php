@@ -103,7 +103,7 @@ class MercadoPago_MercadoEnvios_Model_Shipping_Carrier_MercadoEnvios
                 $params['free_method'] = $freeMethod;
             }
 
-            $response = \MercadoPago\Sdk::get('/shipping_options', $params);
+            $response = \MercadoPago\Sdk::get('/shipping_options', ['url_query' => $params]);
             //$response = $mp->get("/shipping_options", $params);
             if ($response['code'] == 200) {
                 $this->_methods = $response['body']['options'];
