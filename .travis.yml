@@ -93,4 +93,5 @@ script:
   - vendor/bin/behat --config behat.yml --tags ${BEHAT_TAG} --tags="~@skip"
   - sudo cat /var/log/apache2/errormp.log
   - cd ../../../var/log
+  - ls
   - tail -n 100 *log
