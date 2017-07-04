@@ -317,7 +317,7 @@ class MercadoPago_Core_Model_Custom_Payment
                 return $card;
             }
         }
-        $params = ['token' => $token];
+        $params = [];
         if (isset($payment['issuer_id'])) {
             $params['issuer_id'] = (int)$payment['issuer_id'];
         }
