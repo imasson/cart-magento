@@ -940,6 +940,8 @@ class FeatureContext
 
         $code = Mage::getModel('mercadopago/source_country')->getCodeByValue($arg1);
         $this->settingConfig('carriers/mercadoenvios/specificcountry', $code);
+        $this->settingConfig('payment/mercadopago/logs', '1');
+
     }
 
     /**
