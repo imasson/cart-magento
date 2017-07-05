@@ -27,7 +27,6 @@ class MercadoPago_Core_Model_Core
     protected $_canRefund = true;
     protected $_canVoid = true;
     protected $_canUseInternal = false;
-    protected $_canUseCheckout = true;
     protected $_canUseForMultishipping = true;
     protected $_canFetchTransactionInfo = true;
     protected $_canCreateBillingAgreement = true;
@@ -59,7 +58,6 @@ class MercadoPago_Core_Model_Core
      *
      * @param integer $quoteId
      *
-     * @return Mage_Sales_Model_Quote
      */
     protected function _getQuote($quoteId = null)
     {
