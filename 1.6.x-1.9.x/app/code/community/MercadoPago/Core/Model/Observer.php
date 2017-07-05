@@ -227,7 +227,6 @@ class MercadoPago_Core_Model_Observer
         $accessToken = Mage::getStoreConfig(MercadoPago_Core_Helper_Data::XML_PATH_ACCESS_TOKEN);
         $params = [
             'json_data'  => ['status' => 'cancelled'],
-            'url_params' => ['access_token' => $accessToken],
             'uri'        => '/collections/' . $paymentID
         ];
         if ($paymentMethod == 'mercadopago_standard') {
@@ -237,9 +236,10 @@ class MercadoPago_Core_Model_Observer
         } else {
             Mage::helper('mercadopago')->initApiInstance($accessToken);
             $data = [
-                'json_data' => ['status' => 'cancelled']
+                'json_data' => ['status' => 'cancelled'],
+                'uri'        => '/v1/payments/' . $paymentID
             ];
-            $response = \MercadoPago\Sdk::put("/v1/payments", $data);
+            $response = \MercadoPago\Sdk::put($data);
             //$response = $mp->put("/v1/payments/$paymentID?access_token=$access_token", $data);
         }
 

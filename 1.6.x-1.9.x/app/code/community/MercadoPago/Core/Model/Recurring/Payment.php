@@ -134,7 +134,7 @@ class MercadoPago_Core_Model_Recurring_Payment
         $sandbox = Mage::getStoreConfig('payment/mercadopago_recurring/sandbox_mode');
 
         //$response = $mp->create_preapproval_payment($preapproval_data);
-        $response = \MercadoPago\Sdk::post('/preapproval', $preapprovalData);
+        $response = \MercadoPago\Sdk::post('/preapproval', ['json_data' => $preapprovalData]);
         if ($response['code'] == 201 || $response['code'] == 200) {
             if ($sandbox) {
                 $redirectUrl = $response['body']['sandbox_init_point'];
